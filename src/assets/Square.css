@@ -1,0 +1,9 @@
+.light-square {
+    background-color: tan;
+    z-index: 0;
+}
+
+.dark-square {
+    background-color: forestgreen;
+    z-index: 0;
+}

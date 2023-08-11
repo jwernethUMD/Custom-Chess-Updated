@@ -1,0 +1,29 @@
+.win-announcement {
+    background-color: lightgray;
+    border-color: darkgray;
+    border-width: 0.5em;
+    border-style: solid;
+    border-radius: 2em;
+    width: 50vh;
+    height: 25vh;
+    top: 50%;
+    margin-top: -17.5vh;
+    left: 50%;
+    margin-left: -25vh;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 2em;
+    display: flex;
+}
+
+.show {
+    z-index: 2;
+    visibility: visible;
+}
+
+.hide {
+    visibility: hidden;
+    z-index: -1;
+}
