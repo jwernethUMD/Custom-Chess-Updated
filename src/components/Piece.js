@@ -18,7 +18,7 @@ const Piece = (props) => {
     let posX = (Math.abs(props.boardFlip - parseInt(positionX))).toString()
 
     return (
-        <img src={props.img} alt={props.id} 
+        <img src={`${process.env.PUBLIC_URL}/${props.img}`} alt={props.id} 
             onClick={() => props.selectPiece(props.id, positionX, positionY, props.color, props.type, 
                 highlightPiece)} 
             style={{
