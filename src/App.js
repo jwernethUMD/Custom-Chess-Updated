@@ -83,7 +83,8 @@ function App() {
 }
 
 const appStyle = {
-  backgroundColor: "rgb(20, 20, 20)",
+  minHeight: "100%",
+  backgroundColor: "rgb(60, 60, 60)"
 }
 
 export default App;

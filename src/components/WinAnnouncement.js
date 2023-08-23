@@ -1,4 +1,3 @@
-import "../assets/btn.css"
 import "../assets/WinAnnouncement.css"
 import React from "react"
 
@@ -18,7 +17,7 @@ const WinAnnouncement = (props) => {
     return (
         <div className={"win-announcement " + secondClass}>
             <p>{txt}</p>
-            <button className="btn" onClick={props.reset}>Restart</button>
+            <button className="btn btn-primary" onClick={props.reset}>Restart</button>
         </div>
     )
 }

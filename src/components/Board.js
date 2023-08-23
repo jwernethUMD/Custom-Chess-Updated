@@ -921,7 +921,6 @@ const Board = (props) => {
             width: "80vw",
             display: "flex",
             justifyContent: "center",
-            backgroundColor: "rgb(20, 20, 20)",
         }}>
         <div style={boardStyle}>
             {squares.map((square) => (
@@ -941,8 +940,9 @@ const Board = (props) => {
 }
 
 const boardStyle = {
-    width: "100vmin",
-    height: "100vmin",
+    width: "80vmin",
+    height: "80vmin",
+    top: "10vmin",
     backgroundColor: "gray",
     position: "relative",
 }
