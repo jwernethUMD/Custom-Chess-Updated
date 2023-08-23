@@ -15,12 +15,14 @@ function Router() {
 
     return (
         <>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/singleplayer" element={<Singleplayer/> } />
-            </Routes>
-          </BrowserRouter>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element = {<Layout />}>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/singleplayer" element={<Singleplayer/> } />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
         </>
     )
 }
