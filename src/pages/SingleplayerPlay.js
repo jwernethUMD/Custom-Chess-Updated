@@ -3,6 +3,7 @@ import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
 import ControlBar from "../components/ControlBar"
+import { useLocation } from "react-router-dom";
 
 let oRestart
 
@@ -26,6 +27,9 @@ function SingleplayerPlay() {
   const [castlingEnabled, setCastlingEnabled] = useState(true)
   const [flippingEnabled, setFlippingEnabled] = useState(false)
   const [moveTypes, setMoveTypes] = useState(pieceMovements)
+
+  let { state } = useLocation()
+  console.log(state)
   
   function matchEnded(color, restart) {
     setColor(color)

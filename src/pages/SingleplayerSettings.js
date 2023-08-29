@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import "../assets/settings.css"
+import { useState } from "react"
 
 let pieceMovements = {
     rook: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8]],
@@ -17,6 +18,18 @@ function firstToUppercase(str) {
 }
 
 function SingleplayerSettings() {
+    const [formData, setFormData] = useState({
+        checkEnabled: true,
+        castlingEnabled: true,
+        flippingEnabled: false
+    })
+
+    function handleCheckBoxChange(evnt) {
+        const {name, checked} = evnt.target
+        setFormData((prevFormData) => ({...prevFormData, [name]: checked}))
+    }
+
+    console.log(formData)
     return (
         <>
             <div className="container mt-5">
@@ -24,19 +37,19 @@ function SingleplayerSettings() {
                 <form>
                     <div className="form-group form-check">
                         <label className="form-check-label">
-                            <input className="form-check-input" type="checkbox"/>
+                            <input className="form-check-input" type="checkbox" name="checkEnabled" checked={formData["checkEnabled"]} onChange={handleCheckBoxChange}/>
                             Check/Checkmate detection
                         </label>
                     </div>
                     <div className="form-group form-check">
                         <label className="form-check-label">
-                            <input className="form-check-input" type="checkbox"/>
+                            <input className="form-check-input" type="checkbox" name="castlingEnabled" checked={formData["castlingEnabled"]} onChange={handleCheckBoxChange}/>
                             Castling
                         </label>
                     </div>
                     <div className="form-group form-check">
                         <label className="form-check-label">
-                            <input className="form-check-input" type="checkbox"/>
+                            <input className="form-check-input" type="checkbox" name="flippingEnabled" checked={formData["flippingEnabled"]} onChange={handleCheckBoxChange}/>
                             Board flipping each turn
                         </label>
                     </div>
@@ -55,22 +68,23 @@ function SingleplayerSettings() {
                                 </div>
                                 <div id={`collapse${key}`} className="collapse" aira-labelledby="headingOne" data-bs-parent="#accordian">
                                     <div className="card-body">
-                                        <div className="border rounded p-2">
-                                            <label className="m-2"> Unit x: <input type="text"/> </label> 
-                                            <label className="m-2"> Unit y: <input type="text"/> </label> 
-                                            <label className="m-2"> Max units: <input type="text"/> </label>  
-                                            <button type="button" class="btn btn-outline-danger float-end" fdprocessedid="dlbjoq">
-                                                Delete
-                                            </button>
-                                        </div>
+                                        {value.map((movements, index) => (
+                                            <div className="border rounded p-2 my-1">
+                                                <label className="m-2"> Unit x: <input type="text" value={movements[0]}/> </label> 
+                                                <label className="m-2"> Unit y: <input type="text" value={movements[1]}/> </label> 
+                                                <label className="m-2"> Max units: <input type="text" value={movements[2]}/> </label>  
+                                                <button type="button" class="btn btn-outline-danger float-end" fdprocessedid="dlbjoq">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <button className="btn btn-primary mt-4" type="submit">Start Game</button>
+                    <Link className="btn btn-primary my-4" to="/singleplayer/play" state={formData}>Start Game</Link>
                 </form>
-                <Link to="/singleplayer/play">Start game</Link>
             </div>
         </>
     )
