@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import "../assets/settings.css"
 import { useState } from "react"
 
-let pieceMovements = {
+let ogPieceMovements = {
     rook: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8]],
     bishop: [[1, 1, 8], [-1, -1, 8], [1, -1, 8], [-1, 1, 8]],
     knight: [[1, 2, 1], [-1, 2, 1], [1, -2, 1], [-1, -2, 1], 
@@ -17,6 +17,18 @@ function firstToUppercase(str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+let currKey = 0
+function createInitialState() {
+    for (const piece in ogPieceMovements) {
+        let movements = ogPieceMovements[piece]
+        for (let i = 0; i < movements.length; i++) {
+            movements[i][3] = currKey++
+        }
+    }
+
+    return ogPieceMovements
+}
+
 function SingleplayerSettings() {
     const [formData, setFormData] = useState({
         checkEnabled: true,
@@ -24,12 +36,19 @@ function SingleplayerSettings() {
         flippingEnabled: false
     })
 
+    // Triplet structure: unit x, unit y, max units
+    const [pieceMovements, setPieceMovements] = useState(createInitialState())
+
     function handleCheckBoxChange(evnt) {
         const {name, checked} = evnt.target
         setFormData((prevFormData) => ({...prevFormData, [name]: checked}))
     }
 
-    console.log(formData)
+    function removeTriplet(key, piece) {
+        let newMovements = pieceMovements[piece].filter((movement) => key !== movement[3])
+        setPieceMovements({...pieceMovements, [piece]: newMovements})
+    }
+
     return (
         <>
             <div className="container mt-5">
@@ -57,27 +76,28 @@ function SingleplayerSettings() {
                         <a href=".">Guide for customizing moves</a><br/>
                     </div>
                     <div className="form-group" id="accordion">
-                        {Object.entries(pieceMovements).map(([key, value], index) => (
-                            <div className="card">
-                                <div className="card-header" id={`heading${key}`}>
+                        {Object.entries(pieceMovements).map(([piece, value], index) => (
+                            <div className="card" key={piece}>
+                                <div className="card-header" id={`heading${piece}`}>
                                     <h5 className="mb-0">
-                                        <button type="button" className="btn collapsed" data-bs-toggle="collapse" data-bs-target={`#collapse${key}`} aria-expanded="true" aria-control={`collapse${key}`}>
-                                            {`${firstToUppercase(key)} Movement Settings`}
+                                        <button type="button" className="btn collapsed" data-bs-toggle="collapse" data-bs-target={`#collapse${piece}`} aria-expanded="true" aria-control={`collapse${piece}`}>
+                                            {`${firstToUppercase(piece)} Movement Settings`}
                                         </button>
                                     </h5>
                                 </div>
-                                <div id={`collapse${key}`} className="collapse" aira-labelledby="headingOne" data-bs-parent="#accordian">
+                                <div id={`collapse${piece}`} className="collapse" aira-labelledby="headingOne" data-bs-parent="#accordian">
                                     <div className="card-body">
                                         {value.map((movements, index) => (
-                                            <div className="border rounded p-2 my-1">
+                                            <div className="border rounded p-2 my-1" key={movements[3]}>
                                                 <label className="m-2"> Unit x: <input type="text" value={movements[0]}/> </label> 
                                                 <label className="m-2"> Unit y: <input type="text" value={movements[1]}/> </label> 
                                                 <label className="m-2"> Max units: <input type="text" value={movements[2]}/> </label>  
-                                                <button type="button" class="btn btn-outline-danger float-end" fdprocessedid="dlbjoq">
+                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(movements[3], piece)}>
                                                     Delete
                                                 </button>
                                             </div>
                                         ))}
+                                        <button type="button" class="btn btn-outline-success mt-1">Add</button>
                                     </div>
                                 </div>
                             </div>
