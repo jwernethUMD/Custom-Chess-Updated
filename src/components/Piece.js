@@ -1,7 +1,6 @@
 import React, { useState } from "react"
 
 const Piece = (props) => {
-    console.log(process.env.PUBLIC_URL)
     const [positionX, setPositionX] = useState(props.posX)
     const [positionY, setPositionY] = useState(props.posY)
     const [background, setBackground] = useState("rgba(27, 143, 166, 0)")

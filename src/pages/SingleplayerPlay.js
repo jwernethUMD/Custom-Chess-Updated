@@ -19,7 +19,6 @@ let pieceMovements = {
 }
 
 function SingleplayerPlay() {
-    console.log("Testing")
   const [showWin, setShowWin] = useState(false)
   const [color, setColor] = useState("None")
   const [gameDrawn, setGameDrawn] = useState(false)
