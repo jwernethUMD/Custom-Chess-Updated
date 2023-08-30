@@ -5,6 +5,7 @@ import SingleplayerSettings from "../pages/SingleplayerSettings";
 import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
+import Footer from "./Footer";
 
 function Router() {
     const Layout = () => {
@@ -12,6 +13,7 @@ function Router() {
             <>
                 <Header />
                 <Outlet />
+                <Footer />
             </>
         )
     }
