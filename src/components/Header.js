@@ -22,7 +22,7 @@ function Header() {
                         <NavLink activeclassname="active" className="nav-link" to="/singleplayer">Singleplayer</NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink activeclassname="active" className="nav-link" to="/">Guide</NavLink>
+                        <NavLink activeclassname="active" className="nav-link" to="/guide">Guide</NavLink>
                     </li>
                     </ul>
                 </div>

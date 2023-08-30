@@ -2,6 +2,7 @@ import Home from "../pages/Home";
 import Singleplayer from "../pages/Singleplayer"
 import SingleplayerPlay from "../pages/SingleplayerPlay";
 import SingleplayerSettings from "../pages/SingleplayerSettings";
+import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
 
@@ -25,6 +26,7 @@ function Router() {
                             <Route index element={<SingleplayerSettings />} />
                             <Route path="play" element={<SingleplayerPlay />} />
                         </Route>
+                        <Route path="/guide" element={<Guide />}/>
                     </Route>
                 </Routes>
             </BrowserRouter>
