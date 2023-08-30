@@ -24,20 +24,17 @@ function SingleplayerPlay() {
   const [showWin, setShowWin] = useState(false)
   const [color, setColor] = useState("None")
   const [gameDrawn, setGameDrawn] = useState(false)
-  const [checkEnabled, setCheckEnabled] = useState(true)
-  const [castlingEnabled, setCastlingEnabled] = useState(true)
-  const [flippingEnabled, setFlippingEnabled] = useState(false)
   const [moveTypes, setMoveTypes] = useState({})
 
   const { state } = useLocation()
   let {formData, pieceMovements} = state
+  const {checkEnabled, castlingEnabled, flippingEnabled} = formData
 
   useEffect(() => {
     for (const piece in pieceMovements) {
       pieceMovements[piece] = Object.values(pieceMovements[piece])
     }
-    console.log(pieceMovements)
-  }, [])
+  }, [pieceMovements])
   
   console.log(formData, pieceMovements)
   
@@ -56,18 +53,6 @@ function SingleplayerPlay() {
   // TODO: Make these arrow functions for conciseness
   function drawGame() {
     setGameDrawn(true)
-  }
-
-  function changeCastling(castlingEnabled) {
-    setCastlingEnabled(castlingEnabled)
-  }
-
-  function changeChecks(checksEnabled) {
-    setCheckEnabled(checksEnabled)
-  }
-
-  function changeFlipping(flipsEnabled) {
-    setFlippingEnabled(flipsEnabled)
   }
 
   function changeMoveTypes(newTriplets, type) {
@@ -90,9 +75,7 @@ function SingleplayerPlay() {
       <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
       castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
       <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
-      <ControlBar drawGame={drawGame} changeCastling={changeCastling} changeChecks={changeChecks}
-      changeFlipping={changeFlipping} checkEnabled={checkEnabled} castlingEnabled={castlingEnabled}
-      flippingEnabled={flippingEnabled} sendTriplets={tripletsReceived}/>
+      <ControlBar drawGame={drawGame} sendTriplets={tripletsReceived}/>
     </div>
   );
 }

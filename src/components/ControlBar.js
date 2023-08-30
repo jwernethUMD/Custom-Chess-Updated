@@ -28,16 +28,6 @@ const ControlBar = (props) => {
         <>
         <div className="control-bar">
             <DrawBtn drawGame={props.drawGame}/>
-            <button className="cb-btn" onClick={() => {
-                props.changeChecks(!props.checkEnabled)
-            }}>{props.checkEnabled ? "Disable" : "Enable"} check/checkmate detection</button>
-            <button  className="cb-btn" onClick={() => {
-                props.changeCastling(!props.castlingEnabled)
-            }}>{props.castlingEnabled ? "Disable" : "Enable"} castling
-            </button>
-            <button className="cb-btn" onClick={() => {props.changeFlipping(!props.flippingEnabled)}}>
-                {props.flippingEnabled ? "Disable" : "Enable"} board flipping each turn
-            </button>
             {pieces.map((piece) => (
                 <MoveSettingsBtn key={piece + "-btn"} type={piece} showing={showSettings[piece]} setShowSettings={showMoveSettings}/>
             ))}
