@@ -11,7 +11,6 @@ function SingleplayerPlay() {
   const [showWin, setShowWin] = useState(false)
   const [color, setColor] = useState("None")
   const [gameDrawn, setGameDrawn] = useState(false)
-  const [moveTypes, setMoveTypes] = useState({})
 
   const { state } = useLocation()
   let {formData, pieceMovements} = state
@@ -35,22 +34,6 @@ function SingleplayerPlay() {
     oRestart()
     setShowWin(false)
     setGameDrawn(false)
-  }
-
-  // TODO: Make these arrow functions for conciseness
-  function drawGame() {
-    setGameDrawn(true)
-  }
-
-  function changeMoveTypes(newTriplets, type) {
-    let newMoves = global.structuredClone(moveTypes)
-    newMoves[type] = []
-    for (let i = 0; i < newTriplets.length; i++) {
-      let newTriplet = newTriplets[i]
-      newMoves[type].push([newTriplet.x, newTriplet.y, newTriplet.maxu])
-    }
-    console.log("Changing moves types for the", type)
-    return newMoves
   }
 
   return (
