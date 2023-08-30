@@ -915,13 +915,6 @@ const Board = (props) => {
     }
     
     return (
-        <div style={{
-            position: "absolute",
-            height: "100vh",
-            width: "80vw",
-            display: "flex",
-            justifyContent: "center",
-        }}>
         <div style={boardStyle}>
             {squares.map((square) => (
                 <Square color={square.color} width={square.sizeX} height={square.sizeY} 
@@ -934,7 +927,6 @@ const Board = (props) => {
                 selectPiece={pieceSelected} addSetter={addSetter} gameState={gameState}/>
             ))}
             
-        </div>
         </div>
     )
 }

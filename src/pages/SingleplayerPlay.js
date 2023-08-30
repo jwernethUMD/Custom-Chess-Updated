@@ -2,23 +2,10 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
-import ControlBar from "../components/ControlBar"
 import { useLocation } from "react-router-dom";
+import DrawBtn from "../components/DrawBtn";
 
 let oRestart
-
-// Default piece movements
-/*let pieceMovements = {
-  rook: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8]],
-  bishop: [[1, 1, 8], [-1, -1, 8], [1, -1, 8], [-1, 1, 8]],
-  knight: [[1, 2, 1], [-1, 2, 1], [1, -2, 1], [-1, -2, 1], 
-  [2, 1, 1], [2, -1, 1], [-2, 1, 1], [-2, -1, 1]],
-  king: [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], 
-  [1, 1, 1], [-1, -1, 1], [1, -1, 1], [-1, 1, 1]],
-  queen: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8], 
-  [1, 1, 8], [-1, -1, 8], [1, -1, 8], [-1, 1, 8]]
-}*/
-
 
 function SingleplayerPlay() {
   const [showWin, setShowWin] = useState(false)
@@ -66,16 +53,20 @@ function SingleplayerPlay() {
     return newMoves
   }
 
-  function tripletsReceived(triplets, type) {
-    setMoveTypes(changeMoveTypes(triplets, type))
-  }
-
   return (
     <div style={appStyle} className="App">
-      <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
-      castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
+      <div style={{
+            position: "absolute",
+            height: "100vh",
+            width: "80vw",
+            display: "flex",
+            justifyContent: "center",
+        }}>
+        <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
+        castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
+        <DrawBtn drawGame={() => setGameDrawn(true)} />
+      </div>
       <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
-      <ControlBar drawGame={drawGame} sendTriplets={tripletsReceived}/>
     </div>
   );
 }

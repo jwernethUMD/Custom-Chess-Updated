@@ -65,11 +65,16 @@
 }
 
 .draw {
-    background-color: steelblue;
-    padding: 5px;
-    margin: 5px;
+    background-color: gray;
+    padding: 0.75rem;
+    margin: 0.75rem;
     font-weight: 500;
     color: #FFF;
     text-align: center;
-    border-radius: 0.5em;
+    border-radius: 0.5rem;
+    right: 0rem;
+    width: 10rem;
+    height: 10rem;
+    position: relative;
+    top: 10vmin;
 }
