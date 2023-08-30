@@ -1,5 +1,4 @@
 import DrawBtn from "./DrawBtn"
-import MoveSettingsBtn from "./MoveSettingsBtn"
 import React from "react"
 import { useState } from "react"
 
@@ -26,13 +25,6 @@ const ControlBar = (props) => {
         <>
             <div className="control-bar">
                 <DrawBtn drawGame={props.drawGame}/>
-                {pieces.map((piece) => (
-                    <MoveSettingsBtn key={piece + "-btn"} type={piece} showing={showSettings[piece]} setShowSettings={showMoveSettings}/>
-                ))}
-                
-                <button className="cb-btn" onClick={() => setShowTutorial(!showTutorial)}>
-                    Guide for customizing piece moves
-                </button>
             </div>
         </>
     )
