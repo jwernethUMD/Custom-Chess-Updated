@@ -41,7 +41,7 @@ function SingleplayerPlay() {
       <div style={{
             position: "absolute",
             height: "100vh",
-            width: "80vw",
+            width: "98vw",
             display: "flex",
             justifyContent: "center",
         }}>
