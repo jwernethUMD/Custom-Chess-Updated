@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
@@ -8,7 +8,7 @@ import { useLocation } from "react-router-dom";
 let oRestart
 
 // Default piece movements
-let pieceMovements = {
+/*let pieceMovements = {
   rook: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8]],
   bishop: [[1, 1, 8], [-1, -1, 8], [1, -1, 8], [-1, 1, 8]],
   knight: [[1, 2, 1], [-1, 2, 1], [1, -2, 1], [-1, -2, 1], 
@@ -17,7 +17,8 @@ let pieceMovements = {
   [1, 1, 1], [-1, -1, 1], [1, -1, 1], [-1, 1, 1]],
   queen: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8], 
   [1, 1, 8], [-1, -1, 8], [1, -1, 8], [-1, 1, 8]]
-}
+}*/
+
 
 function SingleplayerPlay() {
   const [showWin, setShowWin] = useState(false)
@@ -26,10 +27,19 @@ function SingleplayerPlay() {
   const [checkEnabled, setCheckEnabled] = useState(true)
   const [castlingEnabled, setCastlingEnabled] = useState(true)
   const [flippingEnabled, setFlippingEnabled] = useState(false)
-  const [moveTypes, setMoveTypes] = useState(pieceMovements)
+  const [moveTypes, setMoveTypes] = useState({})
 
-  let { state } = useLocation()
-  console.log(state)
+  const { state } = useLocation()
+  let {formData, pieceMovements} = state
+
+  useEffect(() => {
+    for (const piece in pieceMovements) {
+      pieceMovements[piece] = Object.values(pieceMovements[piece])
+    }
+    console.log(pieceMovements)
+  }, [])
+  
+  console.log(formData, pieceMovements)
   
   function matchEnded(color, restart) {
     setColor(color)
@@ -78,7 +88,7 @@ function SingleplayerPlay() {
   return (
     <div style={appStyle} className="App">
       <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
-      castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={moveTypes}/>
+      castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
       <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
       <ControlBar drawGame={drawGame} changeCastling={changeCastling} changeChecks={changeChecks}
       changeFlipping={changeFlipping} checkEnabled={checkEnabled} castlingEnabled={castlingEnabled}

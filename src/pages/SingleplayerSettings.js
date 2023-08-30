@@ -18,7 +18,7 @@ function firstToUppercase(str) {
 }
 
 let currKey = 0
-function createInitialState() {
+/*function createInitialState() {
     for (const piece in ogPieceMovements) {
         let movements = ogPieceMovements[piece]
         for (let i = 0; i < movements.length; i++) {
@@ -27,6 +27,21 @@ function createInitialState() {
     }
 
     return ogPieceMovements
+}*/
+
+function createInitialState() {
+    let newPieceMovements = structuredClone(ogPieceMovements)
+    for (const piece in newPieceMovements) {
+        let movements = newPieceMovements[piece]
+        let newMovements = {}
+        for (let i = 0; i < movements.length; i++) {
+            newMovements[currKey++] = movements[i]  
+        }
+
+        newPieceMovements[piece] = newMovements
+    }
+
+    return newPieceMovements
 }
 
 function SingleplayerSettings() {
@@ -39,24 +54,28 @@ function SingleplayerSettings() {
     // Triplet structure: unit x, unit y, max units
     const [pieceMovements, setPieceMovements] = useState(createInitialState())
 
-    function handleCheckBoxChange(evnt) {
-        const {name, checked} = evnt.target
+    function handleCheckBoxChange(event) {
+        const {name, checked} = event.target
         setFormData((prevFormData) => ({...prevFormData, [name]: checked}))
     }
 
     function removeTriplet(key, piece) {
-        let newMovements = pieceMovements[piece].filter((movement) => key !== movement[3])
+        let newMovements = structuredClone(pieceMovements[piece])
+        delete newMovements[key]
         setPieceMovements({...pieceMovements, [piece]: newMovements})
     }
 
     function addTriplet(piece) {
-        let newMovements = [...pieceMovements[piece], [0, 0, 0, currKey++]]
+        let newMovements = structuredClone(pieceMovements[piece])
+        newMovements[currKey++] = [0, 0, 0]
         setPieceMovements({...pieceMovements, [piece]: newMovements})
     }
 
-    function changeTriplet(evnt) {
-        const {name, value, piece, key} = evnt.target
-        let newMovements = 0
+    function changeTriplet(event, key, piece) {
+        const {name, value} = event.target
+        let newMovements = structuredClone(pieceMovements[piece])
+        newMovements[key][name] = value
+        setPieceMovements({...pieceMovements, [piece]: newMovements})
     }
 
     return (
@@ -97,12 +116,12 @@ function SingleplayerSettings() {
                                 </div>
                                 <div id={`collapse${piece}`} className="collapse" aira-labelledby="headingOne" data-bs-parent="#accordian">
                                     <div className="card-body">
-                                        {value.map((movements, index) => (
-                                            <div className="border rounded p-2 my-1" key={movements[3]}>
-                                                <label className="m-2"> Unit x: <input type="text" name="0" piece={piece} key={movements[3]} value={movements[0]} onchange={changeTriplet}/> </label> 
-                                                <label className="m-2"> Unit y: <input type="text" name="1" piece={piece} key={movements[3]} value={movements[1]} onchange={changeTriplet}/> </label> 
-                                                <label className="m-2"> Max units: <input type="text" name="2" piece={piece} key={movements[3]} value={movements[2]} onchange={changeTriplet}/> </label>  
-                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(movements[3], piece)}>
+                                        {Object.entries(value).map(([key, movements], index) => (
+                                            <div className="border rounded p-2 my-1" key={key}>
+                                                <label className="m-2"> Unit x: <input type="text" name="0" value={movements[0]} onChange={(event) => changeTriplet(event, key, piece)}/> </label> 
+                                                <label className="m-2"> Unit y: <input type="text" name="1" value={movements[1]} onChange={(event) => changeTriplet(event, key, piece)}/> </label> 
+                                                <label className="m-2"> Max units: <input type="text" name="2" value={movements[2]} onChange={(event) => changeTriplet(event, key, piece)}/> </label>  
+                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(key, piece)}>
                                                     Delete
                                                 </button>
                                             </div>
@@ -113,7 +132,7 @@ function SingleplayerSettings() {
                             </div>
                         ))}
                     </div>
-                    <Link className="btn btn-primary my-4" to="/singleplayer/play" state={formData}>Start Game</Link>
+                    <Link className="btn btn-primary my-4" to="/singleplayer/play" state={{formData: formData, pieceMovements: pieceMovements}}>Start Game</Link>
                 </form>
             </div>
         </>
