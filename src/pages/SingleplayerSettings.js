@@ -49,6 +49,16 @@ function SingleplayerSettings() {
         setPieceMovements({...pieceMovements, [piece]: newMovements})
     }
 
+    function addTriplet(piece) {
+        let newMovements = [...pieceMovements[piece], [0, 0, 0, currKey++]]
+        setPieceMovements({...pieceMovements, [piece]: newMovements})
+    }
+
+    function changeTriplet(evnt) {
+        const {name, value, piece, key} = evnt.target
+        let newMovements = 0
+    }
+
     return (
         <>
             <div className="container mt-5">
@@ -89,15 +99,15 @@ function SingleplayerSettings() {
                                     <div className="card-body">
                                         {value.map((movements, index) => (
                                             <div className="border rounded p-2 my-1" key={movements[3]}>
-                                                <label className="m-2"> Unit x: <input type="text" value={movements[0]}/> </label> 
-                                                <label className="m-2"> Unit y: <input type="text" value={movements[1]}/> </label> 
-                                                <label className="m-2"> Max units: <input type="text" value={movements[2]}/> </label>  
+                                                <label className="m-2"> Unit x: <input type="text" name="0" piece={piece} key={movements[3]} value={movements[0]} onchange={changeTriplet}/> </label> 
+                                                <label className="m-2"> Unit y: <input type="text" name="1" piece={piece} key={movements[3]} value={movements[1]} onchange={changeTriplet}/> </label> 
+                                                <label className="m-2"> Max units: <input type="text" name="2" piece={piece} key={movements[3]} value={movements[2]} onchange={changeTriplet}/> </label>  
                                                 <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(movements[3], piece)}>
                                                     Delete
                                                 </button>
                                             </div>
                                         ))}
-                                        <button type="button" class="btn btn-outline-success mt-1">Add</button>
+                                        <button type="button" class="btn btn-outline-success mt-1" onClick={() => addTriplet(piece)}>Add</button>
                                     </div>
                                 </div>
                             </div>
