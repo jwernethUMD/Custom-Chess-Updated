@@ -109,7 +109,7 @@ function SingleplayerSettings() {
                             <div className="card" key={piece}>
                                 <div className="card-header" id={`heading${piece}`}>
                                     <h5 className="mb-0">
-                                        <button type="button" className="btn collapsed" data-bs-toggle="collapse" data-bs-target={`#collapse${piece}`} aria-expanded="true" aria-control={`collapse${piece}`}>
+                                        <button type="button" className="btn collapsed" data-bs-toggle="collapse" data-bs-target={`#collapse${piece}`} aria-expanded="true" aria-controls={`collapse${piece}`}>
                                             {`${firstToUppercase(piece)} Movement Settings`}
                                         </button>
                                     </h5>
@@ -121,12 +121,12 @@ function SingleplayerSettings() {
                                                 <label className="m-2"> Unit x: <input type="text" name="0" value={movements[0]} onChange={(event) => changeTriplet(event, key, piece)}/> </label> 
                                                 <label className="m-2"> Unit y: <input type="text" name="1" value={movements[1]} onChange={(event) => changeTriplet(event, key, piece)}/> </label> 
                                                 <label className="m-2"> Max units: <input type="text" name="2" value={movements[2]} onChange={(event) => changeTriplet(event, key, piece)}/> </label>  
-                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(key, piece)}>
+                                                <button type="button" className="btn btn-outline-danger float-end" onClick={() => removeTriplet(key, piece)}>
                                                     Delete
                                                 </button>
                                             </div>
                                         ))}
-                                        <button type="button" class="btn btn-outline-success mt-1" onClick={() => addTriplet(piece)}>Add</button>
+                                        <button type="button" className="btn btn-outline-success mt-1" onClick={() => addTriplet(piece)}>Add</button>
                                     </div>
                                 </div>
                             </div>
