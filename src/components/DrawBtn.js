@@ -1,4 +1,4 @@
-import "../assets/controlbar.css"
+import "../assets/draw.css"
 import React from "react"
 
 const DrawBtn = (props) => {

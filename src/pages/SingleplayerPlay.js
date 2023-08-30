@@ -37,7 +37,7 @@ function SingleplayerPlay() {
   }
 
   return (
-    <div style={appStyle} className="App">
+    <div style={playStyle}>
       <div style={{
             position: "absolute",
             height: "100vh",
@@ -54,7 +54,7 @@ function SingleplayerPlay() {
   );
 }
 
-const appStyle = {
+const playStyle = {
   minHeight: "100%",
   backgroundColor: "rgb(60, 60, 60)"
 }
