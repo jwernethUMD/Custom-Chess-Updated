@@ -18,7 +18,7 @@ function firstToUppercase(str) {
 }
 
 let currKey = 0
-function createInitialState() {
+/*function createInitialState() {
     for (const piece in ogPieceMovements) {
         let movements = ogPieceMovements[piece]
         for (let i = 0; i < movements.length; i++) {
@@ -27,6 +27,21 @@ function createInitialState() {
     }
 
     return ogPieceMovements
+}*/
+
+function createInitialState() {
+    let newPieceMovements = structuredClone(ogPieceMovements)
+    for (const piece in newPieceMovements) {
+        let movements = newPieceMovements[piece]
+        let newMovements = {}
+        for (let i = 0; i < movements.length; i++) {
+            newMovements[currKey++] = movements[i]  
+        }
+
+        newPieceMovements[piece] = newMovements
+    }
+
+    return newPieceMovements
 }
 
 function SingleplayerSettings() {
@@ -45,7 +60,14 @@ function SingleplayerSettings() {
     }
 
     function removeTriplet(key, piece) {
-        let newMovements = pieceMovements[piece].filter((movement) => key !== movement[3])
+        let newMovements = structuredClone(pieceMovements[piece])
+        delete newMovements[key]
+        setPieceMovements({...pieceMovements, [piece]: newMovements})
+    }
+
+    function addTriplet(piece) {
+        let newMovements = structuredClone(pieceMovements[piece])
+        newMovements[currKey++] = [0, 0, 0]
         setPieceMovements({...pieceMovements, [piece]: newMovements})
     }
 
@@ -87,17 +109,17 @@ function SingleplayerSettings() {
                                 </div>
                                 <div id={`collapse${piece}`} className="collapse" aira-labelledby="headingOne" data-bs-parent="#accordian">
                                     <div className="card-body">
-                                        {value.map((movements, index) => (
-                                            <div className="border rounded p-2 my-1" key={movements[3]}>
+                                        {Object.entries(value).map(([key, movements], index) => (
+                                            <div className="border rounded p-2 my-1" key={key}>
                                                 <label className="m-2"> Unit x: <input type="text" value={movements[0]}/> </label> 
                                                 <label className="m-2"> Unit y: <input type="text" value={movements[1]}/> </label> 
                                                 <label className="m-2"> Max units: <input type="text" value={movements[2]}/> </label>  
-                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(movements[3], piece)}>
+                                                <button type="button" class="btn btn-outline-danger float-end" onClick={() => removeTriplet(key, piece)}>
                                                     Delete
                                                 </button>
                                             </div>
                                         ))}
-                                        <button type="button" class="btn btn-outline-success mt-1">Add</button>
+                                        <button type="button" class="btn btn-outline-success mt-1" onClick={() => addTriplet(piece)}>Add</button>
                                     </div>
                                 </div>
                             </div>
