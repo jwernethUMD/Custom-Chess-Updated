@@ -48,6 +48,7 @@ function SingleplayerPlay() {
         <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
         castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
         <DrawBtn drawGame={() => setGameDrawn(true)} />
+        <button className="btn btn-primary">Resign</button>
       </div>
       <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
     </div>
