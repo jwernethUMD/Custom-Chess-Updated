@@ -44,7 +44,8 @@ function createInitialState() {
     return newPieceMovements
 }
 
-function SingleplayerSettings() {
+function GameSettings({ gameType }) {
+    console.log(gameType)
     const [formData, setFormData] = useState({
         checkEnabled: true,
         castlingEnabled: true,
@@ -132,11 +133,11 @@ function SingleplayerSettings() {
                             </div>
                         ))}
                     </div>
-                    <Link className="btn btn-primary my-4" to="/singleplayer/play" state={{formData: formData, pieceMovements: pieceMovements}}>Start Game</Link>
+                    <Link className="btn btn-primary my-4" to={`/${gameType}/play`} state={{formData: formData, pieceMovements: pieceMovements}}>Start Game</Link>
                 </form>
             </div>
         </>
     )
 }
 
-export default SingleplayerSettings
+export default GameSettings

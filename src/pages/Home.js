@@ -1,4 +1,8 @@
+import { io } from "socket.io-client"
+
 function Home() {
+    // const socket = io("http://localhost:5000")
+
     return (
         <>
             <div className="container">
