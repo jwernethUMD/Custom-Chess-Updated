@@ -16,10 +16,16 @@ function Header() {
                 <div className="collapse navbar-collapse" id="ccNavbar">
                     <ul className="navbar-nav mr-auto">
                     <li className="nav-item">
-                        <NavLink activeClassName="active" className="nav-link" to="/" >Home</NavLink>
+                        <NavLink activeclassname="active" className="nav-link" to="/" >Home</NavLink>
                     </li>
                     <li className="nav-item">
-                        <NavLink activeClassName="active" className="nav-link" to="/singleplayer">Singleplayer</NavLink>
+                        <NavLink activeclassname="active" className="nav-link" to="/singleplayer">Singleplayer</NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink activeclassname="active" className="nav-link" to="/multiplayer">Multiplayer</NavLink>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink activeclassname="active" className="nav-link" to="/guide">Guide</NavLink>
                     </li>
                     </ul>
                 </div>
