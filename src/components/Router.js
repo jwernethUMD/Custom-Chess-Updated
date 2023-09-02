@@ -4,6 +4,7 @@ import SingleplayerPlay from "../pages/SingleplayerPlay";
 import GameSettings from "../pages/GameSettings";
 import Multiplayer from "../pages/Multiplayer";
 import MultiplayerPlay from "../pages/MultiplayerPlay";
+import MultiplayerChoose from "../pages/MultiplayerChoose";
 import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
@@ -30,7 +31,8 @@ function Router() {
                             <Route path="play" element={<SingleplayerPlay />} />
                         </Route>
                         <Route path="/multiplayer" element={<Multiplayer />}>
-                            <Route index element={<GameSettings gameType="multiplayer"/>} />
+                            <Route index element={<MultiplayerChoose />} />
+                            <Route path="settings" element={<GameSettings gameType="multiplayer"/>} />
                             <Route path="play" element={<MultiplayerPlay />} />
                         </Route>
                         <Route path="/guide" element={<Guide />}/>
