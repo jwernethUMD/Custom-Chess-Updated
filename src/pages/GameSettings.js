@@ -45,7 +45,6 @@ function createInitialState() {
 }
 
 function GameSettings({ gameType }) {
-    console.log(gameType)
     const [formData, setFormData] = useState({
         checkEnabled: true,
         castlingEnabled: true,
@@ -96,12 +95,15 @@ function GameSettings({ gameType }) {
                             Castling
                         </label>
                     </div>
-                    <div className="form-group form-check">
-                        <label className="form-check-label">
-                            <input className="form-check-input" type="checkbox" name="flippingEnabled" checked={formData["flippingEnabled"]} onChange={handleCheckBoxChange}/>
-                            Board flipping each turn
-                        </label>
-                    </div>
+                    {(gameType !== "multiplayer") ? (
+                        <div className="form-group form-check">
+                            <label className="form-check-label">
+                                <input className="form-check-input" type="checkbox" name="flippingEnabled" checked={formData["flippingEnabled"]} onChange={handleCheckBoxChange}/>
+                                Board flipping each turn
+                            </label>
+                        </div>
+                    ) : ""}
+                    
                     <div className="form-group">
                         <a href=".">Guide for customizing moves</a><br/>
                     </div>
@@ -133,7 +135,7 @@ function GameSettings({ gameType }) {
                             </div>
                         ))}
                     </div>
-                    <Link className="btn btn-primary my-4" to={`/${gameType}/play`} state={{formData: formData, pieceMovements: pieceMovements}}>Start Game</Link>
+                    <Link className="btn btn-primary my-4" to={`/${gameType}/play`} state={{formData: formData, pieceMovements: pieceMovements, isGameCreator: true}}>Start Game</Link>
                 </form>
             </div>
         </>

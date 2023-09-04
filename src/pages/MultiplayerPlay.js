@@ -8,23 +8,47 @@ import DrawBtn from "../components/DrawBtn";
 
 let oRestart
 
-function MultiplayerPlay() {
-    // const socket = io("http://localhost:5000")
-    // socket.emit("multiplayer-started")
-
+function MultiplayerPlay(props) {
     const [showWin, setShowWin] = useState(false)
     const [color, setColor] = useState("None")
     const [gameDrawn, setGameDrawn] = useState(false)
-
-    const { state } = useLocation()
-    let {formData, pieceMovements} = state
-    const {checkEnabled, castlingEnabled, flippingEnabled} = formData
-
+    const [gameCode, setGameCode] = useState("")
+    const [checkEnabled, setCheckEnabled] = useState()
+    const [castlingEnabled, setCastlingEnabled] = useState()
+    const [pieceMovements, setPieceMovements] = useState()
+    const [showLoading, setShowLoading] = useState(false)
+    
+    const location = useLocation()
+    
     useEffect(() => {
-        for (const piece in pieceMovements) {
-        pieceMovements[piece] = Object.values(pieceMovements[piece])
+        const state = location.state
+        console.log(state)
+        const socket = io("http://localhost:5000")
+        const {formData, isGameCreator} = state
+        setCheckEnabled(formData.checkEnabled)
+        setCastlingEnabled(formData.castlingEnabled)
+        let tempPieceMovements = state.pieceMovements
+        for (const piece in tempPieceMovements) {
+            tempPieceMovements[piece] = Object.values(tempPieceMovements[piece])
         }
-    }, [pieceMovements])
+        setPieceMovements(tempPieceMovements)
+
+        if (isGameCreator) {
+            setShowLoading(true)
+
+            socket.emit("multiplayer-started", {
+                formData: formData,
+                pieceMovements: pieceMovements
+            }, 
+            (gCode) => {
+                setGameCode(gCode)
+            })
+
+            socket.on("opponent-joined", () => {
+                setShowLoading(false)
+            })
+        }
+    }, [])
     
     function matchEnded(color, restart) {
         setColor(color)
@@ -49,28 +73,30 @@ function MultiplayerPlay() {
                 justifyContent: "center"
             }}>
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
-                castlingEnabled={castlingEnabled} flippingEnabled={flippingEnabled} moveTypes={pieceMovements}/>
+                castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
-            <div className="mx-auto bg-light p-2 rounded" style={{
-                height: "12rem",
-                width: "10rem",
-                zIndex: "2",
-                position: "relative",
-                top: "10rem",
-                textAlign: "center"
-            }}>
-                <div className="align-middle">
-                    Game code: T3STC0D3
+            {showLoading ? (
+                <div className="mx-auto bg-light p-2 rounded" style={{
+                    height: "12rem",
+                    width: "10rem",
+                    zIndex: "2",
+                    position: "relative",
+                    top: "10rem",
+                    textAlign: "center"
+                }}>
+                    <div className="align-middle">
+                        Game code: {gameCode}
+                    </div>
+                    <hr />
+                    <div className="align-middle">
+                        Waiting for opponent...
+                    </div>
+                    <div className="spinner-border align-middle mt-2" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
                 </div>
-                <hr />
-                <div className="align-middle">
-                    Waiting for opponent...
-                </div>
-                <div className="spinner-border align-middle mt-2" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
+            ) : ""}
             <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
         </div>
     );

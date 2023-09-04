@@ -1,16 +1,42 @@
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { io } from "socket.io-client"
 
 function MultiplayerChoose() {
+    const [gameCode, setGameCode] = useState("")
+    const [errMessage, setErrMessage] = useState("")
+    const navigate = useNavigate()
+    const socket = io("http://localhost:5000")
+
+    function joinGame() {
+        socket.emit("join-multiplayer", gameCode, (isValid, errorMessage, rules) => {
+            if (isValid) {
+                console.log("HIHII")
+                navigate("/multiplayer/play", {state: {
+                    formData: rules.formData,
+                    pieceMovements: rules.pieceMovements,
+                    isGameCreator: false
+                }})
+            } else {
+                setErrMessage(errorMessage)
+            }
+        })
+    }
+
     return (
         <>
             <div className="text-center" style={{
                 height: "90%"
             }}>
-                <Link to="" className="btn btn-primary align-middle" style={{
+                <button className="btn btn-primary align-middle" onClick={joinGame} style={{
                     marginTop: "35vh"
-                }}>Join game with code</Link><br />
+                }}>Join game with code</button><br />
+                <input type="text" value={gameCode} onChange={(event) => setGameCode(event.target.value)} style={{
+                    width: "10.5rem"
+                }}></input><br />
+                <div>{errMessage}</div>
                 <Link to="settings" className="btn btn-primary align-middle" style={{
-                    marginTop: "2rem"
+                    marginTop: "1.5rem"
                 }}>Create game</Link>
             </div>
         </>

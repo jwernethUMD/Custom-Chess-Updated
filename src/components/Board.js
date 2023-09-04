@@ -926,7 +926,6 @@ const Board = (props) => {
                 type={piece.type} posX={piece.posX} posY={piece.posY} id={piece.id} boardFlip={flipBoard}
                 selectPiece={pieceSelected} addSetter={addSetter} gameState={gameState}/>
             ))}
-            
         </div>
     )
 }
