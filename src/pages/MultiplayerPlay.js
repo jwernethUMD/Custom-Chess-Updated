@@ -12,11 +12,14 @@ function MultiplayerPlay(props) {
     const [showWin, setShowWin] = useState(false)
     const [color, setColor] = useState("None")
     const [gameDrawn, setGameDrawn] = useState(false)
+    const [showLoading, setShowLoading] = useState(false)
+
+    // All of the following are only set once:
     const [gameCode, setGameCode] = useState("")
     const [checkEnabled, setCheckEnabled] = useState()
     const [castlingEnabled, setCastlingEnabled] = useState()
     const [pieceMovements, setPieceMovements] = useState()
-    const [showLoading, setShowLoading] = useState(false)
+    const [playerColor, setPlayerColor] = useState("none")
     
     const location = useLocation()
     
@@ -45,9 +48,12 @@ function MultiplayerPlay(props) {
                 setGameCode(gCode)
             })
 
-            socket.on("opponent-joined", () => {
+            socket.on("opponent-joined", (pColor) => {
                 setShowLoading(false)
+                setPlayerColor(pColor)
             })
+        } else {
+            setPlayerColor(state.color)
         }
 
         setPieceMovements(tempPieceMovements)
@@ -76,7 +82,7 @@ function MultiplayerPlay(props) {
                 justifyContent: "center"
             }}>
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
-                castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements}/>
+                castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} playerColor={playerColor}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
             {showLoading ? (

@@ -9,12 +9,13 @@ function MultiplayerChoose() {
     const socket = io("http://localhost:5000")
 
     function joinGame() {
-        socket.emit("join-multiplayer", gameCode, (isValid, errorMessage, rules) => {
+        socket.emit("join-multiplayer", gameCode, (isValid, errorMessage, rules, color) => {
             if (isValid) {
                 navigate("/multiplayer/play", {state: {
                     formData: rules.formData,
                     pieceMovements: rules.pieceMovements,
-                    isGameCreator: false
+                    isGameCreator: false,
+                    color: color
                 }})
             } else {
                 setErrMessage(errorMessage)

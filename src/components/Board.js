@@ -15,6 +15,7 @@ let boardModel = []
 let currentTurn = "white"
 let setters = new Map()
 let stats = new Map()
+let playerColor = "solo"
 // If a pawn moves two forward, then information about that pawn is stored in this variable for the
 // next turn in case it can be en passanted
 let enPassant = null
@@ -836,6 +837,10 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
     if (gameState !== "game running") {
         return
     }
+    console.log(playerColor, currentTurn)
+    if (playerColor !== "solo" && playerColor !== currentTurn) {
+        return
+    }
     if (selectedPiece == null) {
         if (pieceColor === currentTurn) {
             selectedPiece = {
@@ -892,11 +897,21 @@ const Board = (props) => {
     flippingBoardEnabled = props.flippingEnabled
     pieceMovements = props.moveTypes
 
+    console.log(playerColor)
+
     useEffect(() => {
         if (props.gameDrawn) {
             endGame("draw")
         }
     })
+
+    useEffect(() => {
+        currentTurn = "white"
+        if (props.playerColor) {
+            playerColor = props.playerColor
+            setTurnColor(playerColor)
+        }
+    }, [])
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
