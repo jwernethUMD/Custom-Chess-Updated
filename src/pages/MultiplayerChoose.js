@@ -11,7 +11,6 @@ function MultiplayerChoose() {
     function joinGame() {
         socket.emit("join-multiplayer", gameCode, (isValid, errorMessage, rules) => {
             if (isValid) {
-                console.log("HIHII")
                 navigate("/multiplayer/play", {state: {
                     formData: rules.formData,
                     pieceMovements: rules.pieceMovements,

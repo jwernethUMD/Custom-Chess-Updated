@@ -22,23 +22,24 @@ function MultiplayerPlay(props) {
     
     useEffect(() => {
         const state = location.state
-        console.log(state)
         const socket = io("http://localhost:5000")
+
         const {formData, isGameCreator} = state
+
         setCheckEnabled(formData.checkEnabled)
         setCastlingEnabled(formData.castlingEnabled)
-        let tempPieceMovements = state.pieceMovements
-        for (const piece in tempPieceMovements) {
-            tempPieceMovements[piece] = Object.values(tempPieceMovements[piece])
-        }
-        setPieceMovements(tempPieceMovements)
 
+        let tempPieceMovements = state.pieceMovements
         if (isGameCreator) {
             setShowLoading(true)
+            // Only need to reformat once in the game host
+            for (const piece in tempPieceMovements) {
+                tempPieceMovements[piece] = Object.values(tempPieceMovements[piece])
+            }
 
             socket.emit("multiplayer-started", {
                 formData: formData,
-                pieceMovements: pieceMovements
+                pieceMovements: tempPieceMovements
             }, 
             (gCode) => {
                 setGameCode(gCode)
@@ -48,6 +49,8 @@ function MultiplayerPlay(props) {
                 setShowLoading(false)
             })
         }
+
+        setPieceMovements(tempPieceMovements)
     }, [])
     
     function matchEnded(color, restart) {
