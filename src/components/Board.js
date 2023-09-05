@@ -228,7 +228,6 @@ function updateBoard(x1, y1, x2, y2, id) {
 
 // x,y is the location of the piece, color is its color
 function pieceControls(x, y, color, type) {
-    console.log("Piece movements in pieceControls:", pieceMovements)
     let triplets = pieceMovements[type]
     let isKing = type === "king"
 
@@ -456,8 +455,8 @@ function movePiece(x, y, fromServer = false) {
     console.log(" stats for that square: ", boardModel[xp][yp])
     console.log("King in check: ", kingInCheck())
     */
-    console.log(getBMString())
-    console.log(getControlString())
+    // console.log(getBMString())
+    // console.log(getControlString())
 
     if (!kingCaptures) {
         let attackedKing = kingInCheck()
@@ -542,6 +541,7 @@ function movePiece(x, y, fromServer = false) {
     if (flippingBoardEnabled) {
         setCurrentTurn(opposite(currentTurn))
     }
+    console.log("Current turn:", currentTurn)
     currentTurn = opposite(currentTurn)
 
     return true
@@ -845,6 +845,7 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
         return
     }
 
+    console.log(playerColor, currentTurn)
     if (playerColor !== "solo" && playerColor !== currentTurn) {
         return
     }
@@ -865,8 +866,11 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
         highlightPiece(false)
     } else { // Piece trying to capture another piece (color unknown)
         if (pieceColor !== selectedPiece.color) {
+            const lastSelectedPiece = selectedPiece
             if (squareSelected(x, y, true)) {
-                globalSendCapture(selectedPiece, x, y, pieceId)
+                if (lastSelectedPiece.type !== "pawn") {
+                    globalSendCapture(lastSelectedPiece, x, y, pieceId, pieceType, pieceColor)
+                }
                 oSetPieces(oPieces.filter((piece) => piece.id !== pieceId))
                 if (pieceType === "king") {
                     endGame(opposite(pieceColor))
@@ -915,11 +919,19 @@ const Board = (props) => {
 
     useEffect(() => {
         currentTurn = "white"
-        restart()
         if (props.isMultiplayer) {
             props.sendPieceMover((piece, x, y) => {
+                console.log("Received move")
                 selectedPiece = piece
                 movePiece(x, y, true)
+            })
+            props.sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+                selectedPiece = piece
+                movePiece(x, y, true)
+                setPieces(pieces.filter((piece) => piece.id !== capturedPieceId))
+                if (capturedPieceType === "king") {
+                    endGame(opposite(capturedPieceColor))
+                }
             })
         }
     }, [])
@@ -931,17 +943,6 @@ const Board = (props) => {
             setTurnColor(playerColor)
         }
     }, [props.playerColor])
-
-    /*useEffect(() => {
-        console.log(props.socket)
-        if (props.socket) {
-            props.socket.on("opponent-moved", (piece, x, y) => {
-                selectedPiece = piece
-                movePiece(x, y)
-            })
-            globalSendMove = props.sendMove
-        }
-    }, [props.socket])*/
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {

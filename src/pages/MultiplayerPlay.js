@@ -7,10 +7,15 @@ import { useLocation } from "react-router-dom";
 import DrawBtn from "../components/DrawBtn";
 
 let oRestart
-let movePiece
+let movePiece, capturePiece
 function sendPieceMover(movePieceFunc) {
     movePiece = movePieceFunc
 }
+
+function sendPieceCapturer(capturePieceFunc) {
+    capturePiece = capturePieceFunc
+}
+
 function MultiplayerPlay() {
     const [showWin, setShowWin] = useState(false)
     const [color, setColor] = useState("None")
@@ -76,13 +81,26 @@ function MultiplayerPlay() {
         })
 
         tempSocket.on("opponent-moved", (piece, x, y) => {
-            console.log("OPPONENT MOVED")
+            console.log("hihi opponent-moved event triggered")
             movePiece(piece, x, y)
+        })
+
+        tempSocket.on("opponent-captured", (piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+            capturePiece(piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor)
+        })
+
+        return (() => {
+            tempSocket.off("opponent-moved")
+            tempSocket.off("opponent-captured")
         })
     }, [])
     
     function sendMove(piece, x, y) {
         socket.emit("player-moved", gameCode, piece, x, y)
+    }
+
+    function sendCapture(piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) {
+        socket.emit("player-captured", gameCode, piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor)
     }
 
     function matchEnded(color, restart) {
@@ -109,7 +127,8 @@ function MultiplayerPlay() {
             }}>
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
                 castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} 
-                playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} socket={socket} sendPieceMover={sendPieceMover}/>
+                playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} sendPieceMover={sendPieceMover}
+                sendPieceCapturer={sendPieceCapturer} sendCapture={sendCapture}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
             {showLoading ? (
