@@ -7,7 +7,10 @@ import { useLocation } from "react-router-dom";
 import DrawBtn from "../components/DrawBtn";
 
 let oRestart
-
+let movePiece
+function sendPieceMover(movePieceFunc) {
+    movePiece = movePieceFunc
+}
 function MultiplayerPlay() {
     const [showWin, setShowWin] = useState(false)
     const [color, setColor] = useState("None")
@@ -24,17 +27,15 @@ function MultiplayerPlay() {
     
     const location = useLocation()
     
+    
     useEffect(() => {
         const state = location.state
         const tempSocket = io("http://localhost:5000")
 
-        const {formData, isGameCreator} = state
-
-        setCheckEnabled(formData.checkEnabled)
-        setCastlingEnabled(formData.castlingEnabled)
-
-        let tempPieceMovements = state.pieceMovements
-        if (isGameCreator) {
+        let tempPieceMovements, formData
+        if (state.isGameCreator) {
+            tempPieceMovements = state.pieceMovements
+            formData = state.formData
             setShowLoading(true)
             // Only need to reformat once in the game host
             for (const piece in tempPieceMovements) {
@@ -53,20 +54,31 @@ function MultiplayerPlay() {
                 setShowLoading(false)
                 setPlayerColor(pColor)
             })
+
+            setCheckEnabled(formData.checkEnabled)
+            setCastlingEnabled(formData.castlingEnabled)
+            setPieceMovements(tempPieceMovements)
         } else {
-            setPlayerColor(state.color)
+            tempSocket.emit("join-multiplayer", state.gameCode, (rules, pColor) => {
+                setPlayerColor(pColor)
+                formData = rules.formData
+                tempPieceMovements = rules.pieceMovements
+                setCheckEnabled(formData.checkEnabled)
+                setCastlingEnabled(formData.castlingEnabled)
+                setPieceMovements(tempPieceMovements)
+            })
+
             setGameCode(state.gameCode)
         }
         
         tempSocket.on("connect", () => {
             setSocket(tempSocket)
         })
-        /*socket.on("opponent-moved", (piece, x, y) => {
-            console.log("hi")
-            console.log(piece, x, y, "HELLOOOOO")
-        })*/
 
-        setPieceMovements(tempPieceMovements)
+        tempSocket.on("opponent-moved", (piece, x, y) => {
+            console.log("OPPONENT MOVED")
+            movePiece(piece, x, y)
+        })
     }, [])
     
     function sendMove(piece, x, y) {
@@ -97,7 +109,7 @@ function MultiplayerPlay() {
             }}>
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
                 castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} 
-                playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} socket={socket}/>
+                playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} socket={socket} sendPieceMover={sendPieceMover}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
             {showLoading ? (

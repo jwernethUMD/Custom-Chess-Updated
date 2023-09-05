@@ -25,7 +25,7 @@ let id = 0
 // o stands for outer
 let oPieces, oSetPieces
 let endMatch
-let globalSendMove
+let globalSendMove, globalSendCapture
 // Keep track of basic stats for each color
 stats.set("white", {
     kingsideCastling: castlingEnabled,
@@ -228,6 +228,7 @@ function updateBoard(x1, y1, x2, y2, id) {
 
 // x,y is the location of the piece, color is its color
 function pieceControls(x, y, color, type) {
+    console.log("Piece movements in pieceControls:", pieceMovements)
     let triplets = pieceMovements[type]
     let isKing = type === "king"
 
@@ -438,8 +439,8 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
     return piecesAttacking
 }
 
-function movePiece(x, y) {
-    if (globalSendMove) {
+function movePiece(x, y, fromServer = false) {
+    if (globalSendMove && !fromServer) {
         globalSendMove(selectedPiece, x, y)
     }
     
@@ -865,6 +866,7 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
     } else { // Piece trying to capture another piece (color unknown)
         if (pieceColor !== selectedPiece.color) {
             if (squareSelected(x, y, true)) {
+                globalSendCapture(selectedPiece, x, y, pieceId)
                 oSetPieces(oPieces.filter((piece) => piece.id !== pieceId))
                 if (pieceType === "king") {
                     endGame(opposite(pieceColor))
@@ -913,8 +915,16 @@ const Board = (props) => {
 
     useEffect(() => {
         currentTurn = "white"
+        restart()
+        if (props.isMultiplayer) {
+            props.sendPieceMover((piece, x, y) => {
+                selectedPiece = piece
+                movePiece(x, y, true)
+            })
+        }
     }, [])
-
+    globalSendMove = props.sendMove
+    globalSendCapture = props.sendCapture
     useEffect(() => {
         if (props.isMultiplayer) {
             playerColor = props.playerColor
@@ -922,7 +932,7 @@ const Board = (props) => {
         }
     }, [props.playerColor])
 
-    useEffect(() => {
+    /*useEffect(() => {
         console.log(props.socket)
         if (props.socket) {
             props.socket.on("opponent-moved", (piece, x, y) => {
@@ -931,7 +941,7 @@ const Board = (props) => {
             })
             globalSendMove = props.sendMove
         }
-    }, [props.socket])
+    }, [props.socket])*/
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
