@@ -15,7 +15,9 @@ function MultiplayerChoose() {
                     formData: rules.formData,
                     pieceMovements: rules.pieceMovements,
                     isGameCreator: false,
-                    color: color
+                    color: color,
+                    gameCode: gameCode,
+                    //socket: socket
                 }})
             } else {
                 setErrMessage(errorMessage)

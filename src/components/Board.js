@@ -1,6 +1,7 @@
 import Square from "./Square"
 import Piece from "./Piece"
 import React, { useEffect, useState } from "react"
+import { io } from "socket.io-client"
 
 // Making kingCaptures true disables check/checkmate detection! Capturing the king is required to
 // win!
@@ -24,6 +25,7 @@ let id = 0
 // o stands for outer
 let oPieces, oSetPieces
 let endMatch
+let globalSendMove
 // Keep track of basic stats for each color
 stats.set("white", {
     kingsideCastling: castlingEnabled,
@@ -437,6 +439,10 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
 }
 
 function movePiece(x, y) {
+    if (globalSendMove) {
+        globalSendMove(selectedPiece, x, y)
+    }
+    
     let tempBoard = modelCopy(boardModel)
 
     updateBoard(parseInt(selectedPiece.posX) / 100, parseInt(selectedPiece.posY) / 100,
@@ -837,7 +843,7 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
     if (gameState !== "game running") {
         return
     }
-    console.log(playerColor, currentTurn)
+
     if (playerColor !== "solo" && playerColor !== currentTurn) {
         return
     }
@@ -882,6 +888,8 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
 
 let setCurrentTurn
 const Board = (props) => {
+    // NOTE: IN HINDSIGHT, I SHOULD HAVE PUT MY FUNCTIONS INTO THIS SO THAT I DIDN'T HAVE TO USE
+    // MY WEIRD WORKAROUND
     let squares = []
     const [pieces, setPieces] = useState(originalPieces)
     const [turnColor, setTurnColor] = useState("white")
@@ -897,8 +905,6 @@ const Board = (props) => {
     flippingBoardEnabled = props.flippingEnabled
     pieceMovements = props.moveTypes
 
-    console.log(playerColor)
-
     useEffect(() => {
         if (props.gameDrawn) {
             endGame("draw")
@@ -907,11 +913,25 @@ const Board = (props) => {
 
     useEffect(() => {
         currentTurn = "white"
-        if (props.playerColor) {
+    }, [])
+
+    useEffect(() => {
+        if (props.isMultiplayer) {
             playerColor = props.playerColor
             setTurnColor(playerColor)
         }
-    }, [])
+    }, [props.playerColor])
+
+    useEffect(() => {
+        console.log(props.socket)
+        if (props.socket) {
+            props.socket.on("opponent-moved", (piece, x, y) => {
+                selectedPiece = piece
+                movePiece(x, y)
+            })
+            globalSendMove = props.sendMove
+        }
+    }, [props.socket])
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {

@@ -8,7 +8,7 @@ import DrawBtn from "../components/DrawBtn";
 
 let oRestart
 
-function MultiplayerPlay(props) {
+function MultiplayerPlay() {
     const [showWin, setShowWin] = useState(false)
     const [color, setColor] = useState("None")
     const [gameDrawn, setGameDrawn] = useState(false)
@@ -20,12 +20,13 @@ function MultiplayerPlay(props) {
     const [castlingEnabled, setCastlingEnabled] = useState()
     const [pieceMovements, setPieceMovements] = useState()
     const [playerColor, setPlayerColor] = useState("none")
+    const [socket, setSocket] = useState()
     
     const location = useLocation()
     
     useEffect(() => {
         const state = location.state
-        const socket = io("http://localhost:5000")
+        const tempSocket = io("http://localhost:5000")
 
         const {formData, isGameCreator} = state
 
@@ -40,7 +41,7 @@ function MultiplayerPlay(props) {
                 tempPieceMovements[piece] = Object.values(tempPieceMovements[piece])
             }
 
-            socket.emit("multiplayer-started", {
+            tempSocket.emit("multiplayer-started", {
                 formData: formData,
                 pieceMovements: tempPieceMovements
             }, 
@@ -48,17 +49,30 @@ function MultiplayerPlay(props) {
                 setGameCode(gCode)
             })
 
-            socket.on("opponent-joined", (pColor) => {
+            tempSocket.on("opponent-joined", (pColor) => {
                 setShowLoading(false)
                 setPlayerColor(pColor)
             })
         } else {
             setPlayerColor(state.color)
+            setGameCode(state.gameCode)
         }
+        
+        tempSocket.on("connect", () => {
+            setSocket(tempSocket)
+        })
+        /*socket.on("opponent-moved", (piece, x, y) => {
+            console.log("hi")
+            console.log(piece, x, y, "HELLOOOOO")
+        })*/
 
         setPieceMovements(tempPieceMovements)
     }, [])
     
+    function sendMove(piece, x, y) {
+        socket.emit("player-moved", gameCode, piece, x, y)
+    }
+
     function matchEnded(color, restart) {
         setColor(color)
         setShowWin(true)
@@ -82,7 +96,8 @@ function MultiplayerPlay(props) {
                 justifyContent: "center"
             }}>
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
-                castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} playerColor={playerColor}/>
+                castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} 
+                playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} socket={socket}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
             {showLoading ? (
