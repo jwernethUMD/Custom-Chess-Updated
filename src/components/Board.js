@@ -25,7 +25,7 @@ let id = 0
 // o stands for outer
 let oPieces, oSetPieces
 let endMatch
-let globalSendMove, globalSendCapture
+let globalSendMove, globalSendCapture, globalSendKingMove
 // Keep track of basic stats for each color
 stats.set("white", {
     kingsideCastling: castlingEnabled,
@@ -439,8 +439,7 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
 }
 
 function movePiece(x, y, fromServer = false, isCapture = false) {
-    console.log(isCapture, fromServer)
-    if (globalSendMove && !fromServer && !isCapture) {
+    if (globalSendMove && !fromServer && !isCapture && selectedPiece.type !== "king") {
         globalSendMove(selectedPiece, x, y)
     }
     
@@ -542,7 +541,6 @@ function movePiece(x, y, fromServer = false, isCapture = false) {
     if (flippingBoardEnabled) {
         setCurrentTurn(opposite(currentTurn))
     }
-    console.log("Current turn:", currentTurn)
     currentTurn = opposite(currentTurn)
 
     return true
@@ -667,7 +665,10 @@ function movePieceFilter(x, y, type, isCapture = false) {
     return false
 }
 
-function moveKing(x, y) {
+function moveKing(x, y, fromServer = false) {
+    if (globalSendKingMove && !fromServer) {
+        globalSendKingMove(selectedPiece, x, y)
+    }
     let posX = parseInt(selectedPiece.posX)
     let posY = parseInt(selectedPiece.posY)
     let differenceX = parseInt(x) - posX
@@ -844,7 +845,6 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
         return
     }
 
-    console.log(playerColor, currentTurn)
     if (playerColor !== "solo" && playerColor !== currentTurn) {
         return
     }
@@ -920,7 +920,6 @@ const Board = (props) => {
         currentTurn = "white"
         if (props.isMultiplayer) {
             props.sendPieceMover((piece, x, y) => {
-                console.log("Received move")
                 selectedPiece = piece
                 movePiece(x, y, true)
                 if (piece.type === "pawn" && y === (piece.color === "black" ? "700" : "0")) {
@@ -928,7 +927,6 @@ const Board = (props) => {
                 }
             })
             props.sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
-                console.log("Received capture")
                 selectedPiece = piece
                 movePiece(x, y, true)
                 setPieces(pieces.filter((piece) => piece.id !== capturedPieceId))
@@ -936,10 +934,15 @@ const Board = (props) => {
                     endGame(opposite(capturedPieceColor))
                 }
             })
+            props.sendKingMover((piece, x, y) => {
+                selectedPiece = piece
+                moveKing(x, y, true)
+            })
         }
     }, [])
     globalSendMove = props.sendMove
     globalSendCapture = props.sendCapture
+    globalSendKingMove = props.sendKingMove
     useEffect(() => {
         if (props.isMultiplayer) {
             playerColor = props.playerColor

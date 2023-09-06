@@ -7,13 +7,17 @@ import { useLocation } from "react-router-dom";
 import DrawBtn from "../components/DrawBtn";
 
 let oRestart
-let movePiece, capturePiece
+let movePiece, capturePiece, moveKing
 function sendPieceMover(movePieceFunc) {
     movePiece = movePieceFunc
 }
 
 function sendPieceCapturer(capturePieceFunc) {
     capturePiece = capturePieceFunc
+}
+
+function sendKingMover(moveKingFunc) {
+    moveKing = moveKingFunc
 }
 
 function MultiplayerPlay() {
@@ -88,9 +92,14 @@ function MultiplayerPlay() {
             capturePiece(piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor)
         })
 
+        tempSocket.on("opponent-king-moved", (piece, x, y) => {
+            moveKing(piece, x, y)
+        })
+
         return (() => {
             tempSocket.off("opponent-moved")
             tempSocket.off("opponent-captured")
+            tempSocket.off("opponent-king-moved")
         })
     }, [])
     
@@ -100,6 +109,10 @@ function MultiplayerPlay() {
 
     function sendCapture(piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) {
         socket.emit("player-captured", gameCode, piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor)
+    }
+
+    function sendKingMove(piece, x, y) {
+        socket.emit("player-king-moved", gameCode, piece, x, y)
     }
 
     function matchEnded(color, restart) {
@@ -127,7 +140,8 @@ function MultiplayerPlay() {
                 <Board matchEnded={matchEnded} gameDrawn={gameDrawn} checkEnabled={checkEnabled}
                 castlingEnabled={castlingEnabled} flippingEnabled={false} moveTypes={pieceMovements} 
                 playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} sendPieceMover={sendPieceMover}
-                sendPieceCapturer={sendPieceCapturer} sendCapture={sendCapture}/>
+                sendPieceCapturer={sendPieceCapturer} sendCapture={sendCapture} sendKingMover={sendKingMover}
+                sendKingMove={sendKingMove}/>
                 <DrawBtn drawGame={() => setGameDrawn(true)} />
             </div>
             {showLoading ? (
