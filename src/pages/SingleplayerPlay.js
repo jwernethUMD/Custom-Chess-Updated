@@ -22,8 +22,6 @@ function SingleplayerPlay() {
     }
   }, [pieceMovements])
   
-  console.log(formData, pieceMovements)
-  
   function matchEnded(color, restart) {
     setColor(color)
     setShowWin(true)

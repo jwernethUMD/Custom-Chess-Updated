@@ -25,6 +25,7 @@ function MultiplayerPlay() {
     const [gameDrawn, setGameDrawn] = useState(false)
     const [showLoading, setShowLoading] = useState(false)
     const [drawText, setDrawText] = useState("Offer draw")
+    const [drawOfferVisible, setDrawOfferVisible] = useState(false)
 
     // All of the following are only set once:
     const [gameCode, setGameCode] = useState("")
@@ -97,8 +98,12 @@ function MultiplayerPlay() {
         })
 
         tempSocket.on("opponent-draw-offer", () => {
-            console.log("Opponent offered draw")
-            // Show a "Opponent offered draw" gui with "Accept" and "Decline" options
+            setDrawOfferVisible(true)
+        })
+
+        tempSocket.on("draw-game", () => {
+            console.log("Opponent drawing game")
+            drawGame(true)
         })
 
         setShowWin(false)
@@ -107,6 +112,7 @@ function MultiplayerPlay() {
             tempSocket.off("opponent-captured")
             tempSocket.off("opponent-king-moved")
             tempSocket.off("opponent-draw-offer")
+            tempSocket.off("draw-game")
         })
     }, [])
     
@@ -139,6 +145,16 @@ function MultiplayerPlay() {
         socket.emit("player-draw-offer", gameCode)
         setDrawText("Draw offer sent")
         setTimeout(() => setDrawText("Offer draw"), 2000)
+    }
+
+    function drawGame(fromServer) {
+        setGameDrawn(true)
+        setDrawOfferVisible(false)
+        console.log(fromServer)
+        if (!fromServer) {
+            console.log("howdy there")
+            socket.emit("draw-game", gameCode)
+        }
     }
 
     return (
@@ -182,6 +198,19 @@ function MultiplayerPlay() {
                     <div className="spinner-border align-middle mt-2" role="status">
                         <span className="visually-hidden">Loading...</span>
                     </div>
+                </div>
+            ) : ""}
+            {drawOfferVisible ? (
+                <div className="bg-light p-2 rounded mx-auto" style={{
+                    width: "13rem",
+                    position: "relative",
+                    zIndex: "2",
+                    textAlign: "center",
+                    top: "14rem"
+                }}>
+                    <div>Opponent offered a draw</div>
+                    <button className="btn btn-success m-2" onClick={() => drawGame(false)}>Accept</button>
+                    <button className="btn btn-danger m-2" onClick={() => setDrawOfferVisible(false)}>Decline</button>
                 </div>
             ) : ""}
             <WinAnnouncement showWin={showWin} color={color} reset={reset}/>
