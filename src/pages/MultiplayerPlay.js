@@ -102,7 +102,6 @@ function MultiplayerPlay() {
         })
 
         tempSocket.on("draw-game", () => {
-            console.log("Opponent drawing game")
             drawGame(true)
         })
 
@@ -150,9 +149,7 @@ function MultiplayerPlay() {
     function drawGame(fromServer) {
         setGameDrawn(true)
         setDrawOfferVisible(false)
-        console.log(fromServer)
         if (!fromServer) {
-            console.log("howdy there")
             socket.emit("draw-game", gameCode)
         }
     }
