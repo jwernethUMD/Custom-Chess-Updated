@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
-import { useLocation } from "react-router-dom";
-import DrawBtn from "../components/DrawBtn";
+import { useLocation, useNavigate } from "react-router-dom";
 
 let oRestart
 let movePiece, capturePiece, moveKing
@@ -25,6 +24,7 @@ function MultiplayerPlay() {
     const [color, setColor] = useState("None")
     const [gameDrawn, setGameDrawn] = useState(false)
     const [showLoading, setShowLoading] = useState(false)
+    const [drawText, setDrawText] = useState("Offer draw")
 
     // All of the following are only set once:
     const [gameCode, setGameCode] = useState("")
@@ -35,7 +35,7 @@ function MultiplayerPlay() {
     const [socket, setSocket] = useState()
     
     const location = useLocation()
-    
+    const navigate = useNavigate()
     
     useEffect(() => {
         const state = location.state
@@ -96,10 +96,17 @@ function MultiplayerPlay() {
             moveKing(piece, x, y)
         })
 
+        tempSocket.on("opponent-draw-offer", () => {
+            console.log("Opponent offered draw")
+            // Show a "Opponent offered draw" gui with "Accept" and "Decline" options
+        })
+
+        setShowWin(false)
         return (() => {
             tempSocket.off("opponent-moved")
             tempSocket.off("opponent-captured")
             tempSocket.off("opponent-king-moved")
+            tempSocket.off("opponent-draw-offer")
         })
     }, [])
     
@@ -125,6 +132,13 @@ function MultiplayerPlay() {
         oRestart()
         setShowWin(false)
         setGameDrawn(false)
+        navigate("/multiplayer")
+    }
+
+    function offerDraw() {
+        socket.emit("player-draw-offer", gameCode)
+        setDrawText("Draw offer sent")
+        setTimeout(() => setDrawText("Offer draw"), 2000)
     }
 
     return (
@@ -142,7 +156,12 @@ function MultiplayerPlay() {
                 playerColor={playerColor} sendMove={sendMove} isMultiplayer={true} sendPieceMover={sendPieceMover}
                 sendPieceCapturer={sendPieceCapturer} sendCapture={sendCapture} sendKingMover={sendKingMover}
                 sendKingMove={sendKingMove}/>
-                <DrawBtn drawGame={() => setGameDrawn(true)} />
+                <button className="btn btn-primary" style={{
+                    width: "8rem",
+                    height: "5rem",
+                    marginTop: "10vmin",
+                    marginLeft: "1rem"
+                }} onClick={offerDraw}>{drawText}</button>
             </div>
             {showLoading ? (
                 <div className="mx-auto bg-light p-2 rounded" style={{

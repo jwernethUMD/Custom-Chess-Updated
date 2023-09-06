@@ -455,8 +455,8 @@ function movePiece(x, y, fromServer = false, isCapture = false) {
     console.log(" stats for that square: ", boardModel[xp][yp])
     console.log("King in check: ", kingInCheck())
     */
-    // console.log(getBMString())
-    // console.log(getControlString())
+    console.log(getBMString())
+    console.log(getControlString())
 
     if (!kingCaptures) {
         let attackedKing = kingInCheck()
@@ -473,6 +473,7 @@ function movePiece(x, y, fromServer = false, isCapture = false) {
             // Index 0 of the result will have the x position, 1 will have the y
             let [kingPosX, kingPosY] = findPiece("king_" + kingColor)
             let kingCanMove = canKingMove(kingPosX, kingPosY)
+            console.log(kingCanMove)
 
             if (!kingCanMove) {
                 console.log("and it can't move!")
