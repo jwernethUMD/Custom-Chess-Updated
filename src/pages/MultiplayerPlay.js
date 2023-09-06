@@ -81,7 +81,6 @@ function MultiplayerPlay() {
         })
 
         tempSocket.on("opponent-moved", (piece, x, y) => {
-            console.log("hihi opponent-moved event triggered")
             movePiece(piece, x, y)
         })
 

@@ -438,8 +438,9 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
     return piecesAttacking
 }
 
-function movePiece(x, y, fromServer = false) {
-    if (globalSendMove && !fromServer) {
+function movePiece(x, y, fromServer = false, isCapture = false) {
+    console.log(isCapture, fromServer)
+    if (globalSendMove && !fromServer && !isCapture) {
         globalSendMove(selectedPiece, x, y)
     }
     
@@ -555,7 +556,6 @@ function movePawn(x, y) {
     let differenceX = parseInt(x) - posX
     let differenceY = (parseInt(y) - posY) * direction
     
-    // Replace the true so that the pawn can only move on its first turn
     if ((differenceX === 0) && (differenceY === 100 )) {
         if (y === (selectedPiece.color === "black" ? "700" : "0")) {
             promotePawn(selectedPiece.id, x)
@@ -587,12 +587,11 @@ function pawnCapture(x, y) {
     let differenceY = (parseInt(y) - parseInt(selectedPiece.posY)) * direction
     let differenceX = Math.abs(parseInt(x) - parseInt(selectedPiece.posX))
     
-    // Replace the true so that the pawn can only move on its first turn
     if ((differenceX === 100) && (differenceY === 100)) {
         if (y === (selectedPiece.color === "black" ? "700" : "0")) {
             promotePawn(selectedPiece.id, x)
         }
-        return movePiece(x, y)
+        return movePiece(x, y, false, true)
     }
 
     return false
@@ -646,7 +645,7 @@ function isTripletMultiple(diffX, diffY, type) {
     return [null, null, null]
 }
 
-function movePieceFilter(x, y, type) {
+function movePieceFilter(x, y, type, isCapture = false) {
     let posX = parseInt(selectedPiece.posX)
     let posY = parseInt(selectedPiece.posY)
     let differenceX = parseInt(x) - posX
@@ -662,7 +661,7 @@ function movePieceFilter(x, y, type) {
             }
         }
 
-        return movePiece(x, y)
+        return movePiece(x, y, false, isCapture)
     }
 
     return false
@@ -732,7 +731,7 @@ function squareSelected(x, y, isCapture) {
         } else if (castlingEnabled && selectedPiece.type === "king") {
             return moveKing(x, y)
         } else {
-            return movePieceFilter(x, y, selectedPiece.type)
+            return movePieceFilter(x, y, selectedPiece.type, isCapture)
         }
     }
 
@@ -868,7 +867,7 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
         if (pieceColor !== selectedPiece.color) {
             const lastSelectedPiece = selectedPiece
             if (squareSelected(x, y, true)) {
-                if (lastSelectedPiece.type !== "pawn") {
+                if (globalSendCapture) {
                     globalSendCapture(lastSelectedPiece, x, y, pieceId, pieceType, pieceColor)
                 }
                 oSetPieces(oPieces.filter((piece) => piece.id !== pieceId))
@@ -924,8 +923,12 @@ const Board = (props) => {
                 console.log("Received move")
                 selectedPiece = piece
                 movePiece(x, y, true)
+                if (piece.type === "pawn" && y === (piece.color === "black" ? "700" : "0")) {
+                    promotePawn(piece.id, x)
+                }
             })
             props.sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+                console.log("Received capture")
                 selectedPiece = piece
                 movePiece(x, y, true)
                 setPieces(pieces.filter((piece) => piece.id !== capturedPieceId))
@@ -941,6 +944,8 @@ const Board = (props) => {
         if (props.isMultiplayer) {
             playerColor = props.playerColor
             setTurnColor(playerColor)
+        } else {
+            playerColor = "solo"
         }
     }, [props.playerColor])
     
