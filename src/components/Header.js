@@ -28,6 +28,10 @@ function Header() {
                         <NavLink activeclassname="active" className="nav-link" to="/guide">Guide</NavLink>
                     </li>
                     </ul>
+                    <ul class="navbar-nav ms-auto me-2">
+                        <NavLink activeclassname="active" className="nav-link" to="/signup">Sign Up</NavLink>
+                        <NavLink activeclassname="active" className="nav-link" to="/">Log In</NavLink>
+                    </ul>
                 </div>
             </div>
         </>

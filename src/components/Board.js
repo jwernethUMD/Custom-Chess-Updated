@@ -1,7 +1,6 @@
 import Square from "./Square"
 import Piece from "./Piece"
 import React, { useEffect, useState } from "react"
-import { io } from "socket.io-client"
 
 // Making kingCaptures true disables check/checkmate detection! Capturing the king is required to
 // win!

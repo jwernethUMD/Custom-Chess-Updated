@@ -8,6 +8,7 @@ import MultiplayerChoose from "../pages/MultiplayerChoose";
 import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
+import Signup from "../pages/Signup";
 
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
                             <Route path="settings" element={<GameSettings gameType="multiplayer"/>} />
                             <Route path="play" element={<MultiplayerPlay />} />
                         </Route>
+                        <Route path="/signup" element={<Signup />}></Route>
                         <Route path="/guide" element={<Guide />}/>
                     </Route>
                 </Routes>
