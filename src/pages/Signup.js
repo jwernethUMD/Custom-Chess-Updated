@@ -5,12 +5,15 @@ const baseUrl = "http://localhost:5000"
 function Signup() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+
     async function signUp() {
         try {
             const response = await axios.post(`${baseUrl}/api/signup`, {
                 username: username,
                 password: password
             })
+            
+            console.log(response.data)
         } catch (error) {
             console.error(error)
         }
