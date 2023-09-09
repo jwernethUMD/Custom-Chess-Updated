@@ -30,7 +30,7 @@ function Header() {
                     </ul>
                     <ul className="navbar-nav ms-auto me-2">
                         <NavLink activeclassname="active" className="nav-link" to="/signup">Sign Up</NavLink>
-                        <NavLink activeclassname="active" className="nav-link" to="/">Log In</NavLink>
+                        <NavLink activeclassname="active" className="nav-link" to="/login">Log In</NavLink>
                     </ul>
                 </div>
             </div>

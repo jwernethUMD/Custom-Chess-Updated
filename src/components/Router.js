@@ -9,6 +9,7 @@ import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
 import Signup from "../pages/Signup";
+import Login from "../pages/login";
 
 
 function Router() {
@@ -37,6 +38,7 @@ function Router() {
                             <Route path="play" element={<MultiplayerPlay />} />
                         </Route>
                         <Route path="/signup" element={<Signup />}></Route>
+                        <Route path="/login" element={<Login />}></Route>
                         <Route path="/guide" element={<Guide />}/>
                     </Route>
                 </Routes>

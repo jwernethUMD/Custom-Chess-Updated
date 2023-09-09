@@ -2,22 +2,18 @@ import { useState } from "react"
 import axios from "axios"
 
 const baseUrl = "http://localhost:5000"
-function Signup() {
+function Login() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
-    const [errMessage, setErrMessage] = useState("")
 
-    async function signUp() {
+    async function logIn() {
         try {
-            const response = await axios.post(`${baseUrl}/api/signup`, {
+            const response = await axios.post(`${baseUrl}/api/login`, {
                 username: username,
                 password: password
             })
-
+            
             console.log(response.data)
-            if (!response.data.isValid) {
-                setErrMessage(response.data.errMessage)
-            }
         } catch (error) {
             console.error(error)
         }
@@ -33,13 +29,12 @@ function Signup() {
                     top: "8rem",
                     width: "18rem"
                 }}>
-                    <h1 className="mb-3">Sign Up</h1>
+                    <h1 className="mb-3">Log In</h1>
                     <hr />
                     <form>
-                        <input type="text" placeholder="Username" className="p-1 mt-3" value={username} onChange={(event) => setUsername(event.target.value)}></input>
-                        <div className="text-danger mb-2">{errMessage}</div>
-                        <input type="password" placeholder="Password" className="p-1 mb-3" value={password} onChange={(event) => setPassword(event.target.value)}></input>
-                        <button type="button" className="btn btn-primary my-3" onClick={signUp}>Sign Up</button>
+                        <input type="text" placeholder="Username" className="p-1 my-3" value={username} onChange={(event) => setUsername(event.target.value)}></input>
+                        <input type="password" placeholder="Password" className="p-1 my-3" value={password} onChange={(event) => setPassword(event.target.value)}></input>
+                        <button type="button" className="btn btn-primary my-3" onClick={logIn}>Log In</button>
                     </form>
                 </div>
             </div>
@@ -47,4 +42,4 @@ function Signup() {
     )
 }
 
-export default Signup
+export default Login
