@@ -4,6 +4,9 @@ import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const baseUrl = "http://localhost:5000"
 
 let oRestart
 let movePiece, capturePiece, moveKing
@@ -128,9 +131,19 @@ function MultiplayerPlay() {
     }
 
     function matchEnded(color, restart) {
+        // TODO: Move this to backend eventually so users can't give themselves wins
+        let result = "draw"
+        if (color !== "draw") {
+            result = (color == playerColor) ? "win" : "loss"
+        }
+
         setColor(color)
         setShowWin(true)
         oRestart = restart
+
+        axios.post(`${baseUrl}/api/gameend`, {
+            result: result
+        })
     }
 
     function reset() {
@@ -147,6 +160,7 @@ function MultiplayerPlay() {
     }
 
     function drawGame(fromServer) {
+        // axios request here
         setGameDrawn(true)
         setDrawOfferVisible(false)
         if (!fromServer) {

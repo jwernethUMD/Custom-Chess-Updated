@@ -4,10 +4,9 @@ import { NavLink } from "react-router-dom"
 const baseUrl = "http://localhost:5000"
 
 function Header() {
-    const [userLoggedIn, setUserLoggedIn] = useState(false)
+    const [userLoggedIn, setUserLoggedIn] = useState(true)
     async function findIfLoggedIn() {
         try {
-            console.log("HOWDY")
             const response = await axios.get(`${baseUrl}/api/loggedin`)
             setUserLoggedIn(response.data.loggedIn)
         } catch (error) {
@@ -16,7 +15,6 @@ function Header() {
     }
     
     useEffect(() => {
-        console.log("heyho")
         findIfLoggedIn()
     }, [])
     return (

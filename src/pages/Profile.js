@@ -1,5 +1,6 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 const baseUrl = "http://localhost:5000"
 
 function Profile() {
@@ -8,18 +9,31 @@ function Profile() {
     const [losses, setLosses] = useState(0)
     const [draws, setDraws] = useState(0)
 
+    const navigate = useNavigate()
+
     async function setUserStats() {
         try {
             const response = await axios.get(`${baseUrl}/api/userstats`)
 
             const data = response.data
-            console.log(data)
+
             setUsername(data.username)
             setWins(data.wins)
             setLosses(data.losses)
             setDraws(data.draws)
         } catch (error) {
-            console.log(error)
+            console.error(error)
+        }
+    }
+
+    async function logout() {
+        try {
+            await axios.get(`${baseUrl}/api/logout`)
+            navigate("/", {state: {
+                fromLogin: true
+            }})
+        } catch (error) {
+            console.error(error)
         }
     }
 
@@ -39,6 +53,7 @@ function Profile() {
                     <b>Losses:</b> {losses}<br/>
                     <b>Draws:</b> {draws}<br/>
                 </div>
+                <button className="btn btn-danger mt-5" onClick={logout}>Log out</button>
             </div>
         </>
     )
