@@ -6,6 +6,7 @@ const baseUrl = "http://localhost:5000"
 function Login() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+    const [errMessage, setErrMessage] = useState("")
     const navigate = useNavigate()
 
     async function logIn() {
@@ -16,13 +17,13 @@ function Login() {
             })
             
             const {isValid, errMessage} = response.data
-            
+
             if (isValid) {
                 navigate("/", {state: {
                     fromLogin: true
                 }})
             } else {
-                console.error(errMessage)
+                setErrMessage(errMessage)
             }
         } catch (error) {
             console.error("Error: ", error)
@@ -45,6 +46,11 @@ function Login() {
                         <input type="text" placeholder="Username" className="p-1 my-3" value={username} onChange={(event) => setUsername(event.target.value)}></input>
                         <input type="password" placeholder="Password" className="p-1 my-3" value={password} onChange={(event) => setPassword(event.target.value)}></input>
                         <button type="button" className="btn btn-primary my-3" onClick={logIn}>Log In</button>
+                        {(errMessage !== "") ? (
+                            <>
+                                <div className="text-danger">{errMessage}</div>
+                            </>
+                        ) : ""}
                     </form>
                 </div>
             </div>
