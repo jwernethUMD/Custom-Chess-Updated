@@ -1,10 +1,12 @@
 import { useState } from "react"
 import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const baseUrl = "http://localhost:5000"
 function Login() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
+    const navigate = useNavigate()
 
     async function logIn() {
         try {
@@ -13,9 +15,16 @@ function Login() {
                 password: password
             })
             
-            console.log(response.data)
+            const {isValid, errMessage} = response.data
+            if (isValid) {
+                navigate("/", {state: {
+                    fromLogin: true
+                }})
+            } else {
+                console.error(errMessage)
+            }
         } catch (error) {
-            console.error(error)
+            console.error("Error: ", error)
         }
     }
 

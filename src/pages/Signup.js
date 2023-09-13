@@ -1,11 +1,13 @@
 import { useState } from "react"
 import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 const baseUrl = "http://localhost:5000"
 function Signup() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [errMessage, setErrMessage] = useState("")
+    const navigate = useNavigate()
 
     async function signUp() {
         try {
@@ -14,9 +16,13 @@ function Signup() {
                 password: password
             })
 
-            console.log(response.data)
-            if (!response.data.isValid) {
-                setErrMessage(response.data.errMessage)
+            const {isValid, errMessage} = response.data
+            if (isValid) {
+                navigate("/", {state: {
+                    fromLogin: true
+                }})
+            } else {
+                setErrMessage(errMessage)
             }
         } catch (error) {
             console.error(error)

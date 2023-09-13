@@ -9,7 +9,7 @@ import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
 import Signup from "../pages/Signup";
-import Login from "../pages/login";
+import Login from "../pages/Login";
 
 
 function Router() {
