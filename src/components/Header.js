@@ -47,7 +47,9 @@ function Header() {
                     </ul>
                     <ul className="navbar-nav ms-auto me-2">
                         {userLoggedIn ? (
-                            ""
+                            <>
+                                <NavLink activeclassname="active" className="nav-link" to="/profile">Profile</NavLink>
+                            </>
                         ) : (
                             <>
                                 <NavLink activeclassname="active" className="nav-link" to="/signup">Sign Up</NavLink>

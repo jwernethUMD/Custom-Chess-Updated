@@ -10,6 +10,7 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import Header from "./Header"
 import Signup from "../pages/Signup";
 import Login from "../pages/Login";
+import Profile from "../pages/Profile";
 
 
 function Router() {
@@ -37,9 +38,10 @@ function Router() {
                             <Route path="settings" element={<GameSettings gameType="multiplayer"/>} />
                             <Route path="play" element={<MultiplayerPlay />} />
                         </Route>
-                        <Route path="/signup" element={<Signup />}></Route>
-                        <Route path="/login" element={<Login />}></Route>
-                        <Route path="/guide" element={<Guide />}/>
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/guide" element={<Guide />} />
+                        <Route path="/profile" element={<Profile />} />
                     </Route>
                 </Routes>
             </BrowserRouter>
