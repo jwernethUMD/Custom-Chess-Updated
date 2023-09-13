@@ -32,6 +32,7 @@ function Profile() {
             navigate("/", {state: {
                 fromLogin: true
             }})
+            window.location.reload(false)
         } catch (error) {
             console.error(error)
         }

@@ -21,6 +21,7 @@ function Signup() {
                 navigate("/", {state: {
                     fromLogin: true
                 }})
+                window.location.reload(false)
             } else {
                 setErrMessage(errMessage)
             }
