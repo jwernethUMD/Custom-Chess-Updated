@@ -1,7 +1,9 @@
 import axios from "axios"
 import React, { useEffect, useState } from "react"
+import { BackendURL } from "../GlobalConstants"
 import { NavLink } from "react-router-dom"
-const baseUrl = "https://custom-chess.onrender.com"
+
+const baseUrl = BackendURL//"http://localhost:5000"//"https://custom-chess.onrender.com"
 
 function Header() {
     const [userLoggedIn, setUserLoggedIn] = useState(true)

@@ -1,12 +1,13 @@
 import { io } from "socket.io-client"
 import { useEffect, useState } from "react";
+import { BackendURL } from "../GlobalConstants";
 import React from "react";
 import Board from "../components/Board";
 import WinAnnouncement from "../components/WinAnnouncement"
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const baseUrl = "https://custom-chess.onrender.com"
+const baseUrl = BackendURL // "http://localhost:5000"//"https://custom-chess.onrender.com"
 
 let oRestart
 let movePiece, capturePiece, moveKing

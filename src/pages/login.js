@@ -1,8 +1,9 @@
 import React, { useState } from "react"
+import { BackendURL } from "../GlobalConstants"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
-const baseUrl = "https://custom-chess.onrender.com"
+const baseUrl = BackendURL //"http://localhost:5000"// "https://custom-chess.onrender.com"
 function Login() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
