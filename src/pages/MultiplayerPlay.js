@@ -41,8 +41,6 @@ function MultiplayerPlay() {
     const location = useLocation()
     const navigate = useNavigate()
 
-    const baseUrl = "https://customchess-jason60035.b4a.run"
-    
     useEffect(() => {
         const state = location.state
         const tempSocket = io(baseUrl)

@@ -18,7 +18,6 @@ function Login() {
             
             const {isValid, errMessage} = response.data
 
-            console.log(axios.defaults.withCredentials)
             if (isValid) {
                 navigate("/", {state: {
                     fromLogin: true
