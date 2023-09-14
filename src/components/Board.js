@@ -15,6 +15,7 @@ let boardModel = []
 let currentTurn = "white"
 let setters = new Map()
 let stats = new Map()
+let playerColor = "solo"
 // If a pawn moves two forward, then information about that pawn is stored in this variable for the
 // next turn in case it can be en passanted
 let enPassant = null
@@ -23,6 +24,7 @@ let id = 0
 // o stands for outer
 let oPieces, oSetPieces
 let endMatch
+let globalSendMove, globalSendCapture, globalSendKingMove
 // Keep track of basic stats for each color
 stats.set("white", {
     kingsideCastling: castlingEnabled,
@@ -435,7 +437,11 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
     return piecesAttacking
 }
 
-function movePiece(x, y) {
+function movePiece(x, y, fromServer = false, isCapture = false) {
+    if (globalSendMove && !fromServer && !isCapture && selectedPiece.type !== "king") {
+        globalSendMove(selectedPiece, x, y)
+    }
+    
     let tempBoard = modelCopy(boardModel)
 
     updateBoard(parseInt(selectedPiece.posX) / 100, parseInt(selectedPiece.posY) / 100,
@@ -466,6 +472,7 @@ function movePiece(x, y) {
             // Index 0 of the result will have the x position, 1 will have the y
             let [kingPosX, kingPosY] = findPiece("king_" + kingColor)
             let kingCanMove = canKingMove(kingPosX, kingPosY)
+            console.log(kingCanMove)
 
             if (!kingCanMove) {
                 console.log("and it can't move!")
@@ -547,7 +554,6 @@ function movePawn(x, y) {
     let differenceX = parseInt(x) - posX
     let differenceY = (parseInt(y) - posY) * direction
     
-    // Replace the true so that the pawn can only move on its first turn
     if ((differenceX === 0) && (differenceY === 100 )) {
         if (y === (selectedPiece.color === "black" ? "700" : "0")) {
             promotePawn(selectedPiece.id, x)
@@ -579,12 +585,11 @@ function pawnCapture(x, y) {
     let differenceY = (parseInt(y) - parseInt(selectedPiece.posY)) * direction
     let differenceX = Math.abs(parseInt(x) - parseInt(selectedPiece.posX))
     
-    // Replace the true so that the pawn can only move on its first turn
     if ((differenceX === 100) && (differenceY === 100)) {
         if (y === (selectedPiece.color === "black" ? "700" : "0")) {
             promotePawn(selectedPiece.id, x)
         }
-        return movePiece(x, y)
+        return movePiece(x, y, false, true)
     }
 
     return false
@@ -638,7 +643,7 @@ function isTripletMultiple(diffX, diffY, type) {
     return [null, null, null]
 }
 
-function movePieceFilter(x, y, type) {
+function movePieceFilter(x, y, type, isCapture = false) {
     let posX = parseInt(selectedPiece.posX)
     let posY = parseInt(selectedPiece.posY)
     let differenceX = parseInt(x) - posX
@@ -654,13 +659,16 @@ function movePieceFilter(x, y, type) {
             }
         }
 
-        return movePiece(x, y)
+        return movePiece(x, y, false, isCapture)
     }
 
     return false
 }
 
-function moveKing(x, y) {
+function moveKing(x, y, fromServer = false) {
+    if (globalSendKingMove && !fromServer) {
+        globalSendKingMove(selectedPiece, x, y)
+    }
     let posX = parseInt(selectedPiece.posX)
     let posY = parseInt(selectedPiece.posY)
     let differenceX = parseInt(x) - posX
@@ -724,7 +732,7 @@ function squareSelected(x, y, isCapture) {
         } else if (castlingEnabled && selectedPiece.type === "king") {
             return moveKing(x, y)
         } else {
-            return movePieceFilter(x, y, selectedPiece.type)
+            return movePieceFilter(x, y, selectedPiece.type, isCapture)
         }
     }
 
@@ -836,6 +844,10 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
     if (gameState !== "game running") {
         return
     }
+
+    if (playerColor !== "solo" && playerColor !== currentTurn) {
+        return
+    }
     if (selectedPiece == null) {
         if (pieceColor === currentTurn) {
             selectedPiece = {
@@ -853,7 +865,11 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
         highlightPiece(false)
     } else { // Piece trying to capture another piece (color unknown)
         if (pieceColor !== selectedPiece.color) {
+            const lastSelectedPiece = selectedPiece
             if (squareSelected(x, y, true)) {
+                if (globalSendCapture) {
+                    globalSendCapture(lastSelectedPiece, x, y, pieceId, pieceType, pieceColor)
+                }
                 oSetPieces(oPieces.filter((piece) => piece.id !== pieceId))
                 if (pieceType === "king") {
                     endGame(opposite(pieceColor))
@@ -877,6 +893,8 @@ function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
 
 let setCurrentTurn
 const Board = (props) => {
+    // NOTE: IN HINDSIGHT, I SHOULD HAVE PUT MY FUNCTIONS INTO THIS SO THAT I DIDN'T HAVE TO USE
+    // MY WEIRD WORKAROUND
     let squares = []
     const [pieces, setPieces] = useState(originalPieces)
     const [turnColor, setTurnColor] = useState("white")
@@ -897,6 +915,42 @@ const Board = (props) => {
             endGame("draw")
         }
     })
+
+    useEffect(() => {
+        currentTurn = "white"
+        if (props.isMultiplayer) {
+            props.sendPieceMover((piece, x, y) => {
+                selectedPiece = piece
+                movePiece(x, y, true)
+                if (piece.type === "pawn" && y === (piece.color === "black" ? "700" : "0")) {
+                    promotePawn(piece.id, x)
+                }
+            })
+            props.sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+                selectedPiece = piece
+                movePiece(x, y, true)
+                setPieces(pieces.filter((piece) => piece.id !== capturedPieceId))
+                if (capturedPieceType === "king") {
+                    endGame(opposite(capturedPieceColor))
+                }
+            })
+            props.sendKingMover((piece, x, y) => {
+                selectedPiece = piece
+                moveKing(x, y, true)
+            })
+        }
+    }, [])
+    globalSendMove = props.sendMove
+    globalSendCapture = props.sendCapture
+    globalSendKingMove = props.sendKingMove
+    useEffect(() => {
+        if (props.isMultiplayer) {
+            playerColor = props.playerColor
+            setTurnColor(playerColor)
+        } else {
+            playerColor = "solo"
+        }
+    }, [props.playerColor])
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
@@ -926,7 +980,6 @@ const Board = (props) => {
                 type={piece.type} posX={piece.posX} posY={piece.posY} id={piece.id} boardFlip={flipBoard}
                 selectPiece={pieceSelected} addSetter={addSetter} gameState={gameState}/>
             ))}
-            
         </div>
     )
 }

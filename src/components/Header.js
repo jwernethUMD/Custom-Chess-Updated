@@ -1,7 +1,22 @@
-import React from "react"
+import axios from "axios"
+import React, { useEffect, useState } from "react"
 import { NavLink } from "react-router-dom"
+const baseUrl = "http://localhost:5000"
 
 function Header() {
+    const [userLoggedIn, setUserLoggedIn] = useState(true)
+    async function findIfLoggedIn() {
+        try {
+            const response = await axios.get(`${baseUrl}/api/loggedin`)
+            setUserLoggedIn(response.data.loggedIn)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    
+    useEffect(() => {
+        findIfLoggedIn()
+    }, [])
     return (
         <>
             <div className="navbar navbar-expand-sm navbar-dark bg-dark px-2">
@@ -27,6 +42,18 @@ function Header() {
                     <li className="nav-item">
                         <NavLink activeclassname="active" className="nav-link" to="/guide">Guide</NavLink>
                     </li>
+                    </ul>
+                    <ul className="navbar-nav ms-auto me-2">
+                        {userLoggedIn ? (
+                            <>
+                                <NavLink activeclassname="active" className="nav-link" to="/profile">Profile</NavLink>
+                            </>
+                        ) : (
+                            <>
+                                <NavLink activeclassname="active" className="nav-link" to="/signup">Sign Up</NavLink>
+                                <NavLink activeclassname="active" className="nav-link" to="/login">Log In</NavLink>
+                            </>
+                        )}
                     </ul>
                 </div>
             </div>
