@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import "../assets/settings.css"
-import { useState } from "react"
+import React, { useState } from "react"
 
 let ogPieceMovements = {
     rook: [[1, 0, 8], [-1, 0, 8], [0, 1, 8], [0, -1, 8]],

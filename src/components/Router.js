@@ -7,7 +7,8 @@ import MultiplayerPlay from "../pages/MultiplayerPlay";
 import MultiplayerChoose from "../pages/MultiplayerChoose";
 import Guide from "../pages/Guide";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
-import Header from "./Header"
+import React from "react";
+import Header from "./Header";
 import Signup from "../pages/Signup";
 import Login from "../pages/login";
 import Profile from "../pages/Profile";
