@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
-const baseUrl = "http://localhost:5000"
+const baseUrl = "https://customchess-jason60035.b4a.run"
 function Signup() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")

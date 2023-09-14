@@ -6,7 +6,7 @@ import WinAnnouncement from "../components/WinAnnouncement"
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const baseUrl = "http://localhost:5000"
+const baseUrl = "https://customchess-jason60035.b4a.run"
 
 let oRestart
 let movePiece, capturePiece, moveKing
@@ -134,7 +134,7 @@ function MultiplayerPlay() {
         // TODO: Move this to backend eventually so users can't give themselves wins
         let result = "draw"
         if (color !== "draw") {
-            result = (color == playerColor) ? "win" : "loss"
+            result = (color === playerColor) ? "win" : "loss"
         }
 
         setColor(color)

@@ -1,7 +1,7 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-const baseUrl = "http://localhost:5000"
+const baseUrl = "https://customchess-jason60035.b4a.run"
 
 function Profile() {
     const [username, setUsername] = useState("")

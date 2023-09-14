@@ -1,12 +1,13 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { io } from "socket.io-client"
+const baseUrl = "https://customchess-jason60035.b4a.run"
 
 function MultiplayerChoose() {
     const [gameCode, setGameCode] = useState("")
     const [errMessage, setErrMessage] = useState("")
     const navigate = useNavigate()
-    const socket = io("http://localhost:5000")
+    const socket = io(baseUrl)
 
     function joinGame() {
         socket.emit("check-multiplayer", gameCode, (isValid, errorMessage) => {
