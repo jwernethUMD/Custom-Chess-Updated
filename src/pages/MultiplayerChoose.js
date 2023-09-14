@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { io } from "socket.io-client"
-const baseUrl = "https://customchess-jason60035.b4a.run"
+const baseUrl = "https://custom-chess.onrender.com"
 
 function MultiplayerChoose() {
     const [gameCode, setGameCode] = useState("")

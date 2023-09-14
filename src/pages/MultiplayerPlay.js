@@ -6,7 +6,7 @@ import WinAnnouncement from "../components/WinAnnouncement"
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const baseUrl = "https://customchess-jason60035.b4a.run"
+const baseUrl = "https://custom-chess.onrender.com"
 
 let oRestart
 let movePiece, capturePiece, moveKing

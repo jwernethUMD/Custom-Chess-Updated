@@ -1,7 +1,7 @@
 import axios from "axios"
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-const baseUrl = "https://customchess-jason60035.b4a.run"
+const baseUrl = "https://custom-chess.onrender.com"
 
 function Profile() {
     const [username, setUsername] = useState("")
