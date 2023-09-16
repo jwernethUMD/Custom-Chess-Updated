@@ -504,7 +504,6 @@ function makePieces() {
     return result
 }
 
-let setCurrentTurn
 const Board = (props) => {
     function promotePawn(pawnId, x) {
         // Map all elements onto the same as what they were before except for the pawn with
@@ -787,7 +786,7 @@ const Board = (props) => {
         enPassant = null
         setHighlight(false)
         if (flippingBoardEnabled) {
-            setCurrentTurn(opposite(currentTurn))
+            setTurnColor(opposite(currentTurn))
         }
         currentTurn = opposite(currentTurn)
     
@@ -830,7 +829,7 @@ const Board = (props) => {
             }
         })
         if (flippingBoardEnabled) {
-            setCurrentTurn("white")
+            setTurnColor("white")
         }
         currentTurn = "white"
         gameState = "game running"
@@ -845,10 +844,11 @@ const Board = (props) => {
         if (gameState !== "game running") {
             return
         }
-    
+        console.log(playerColor, currentTurn)
         if (playerColor !== "solo" && playerColor !== currentTurn) {
             return
         }
+
         if (selectedPiece == null) {
             if (pieceColor === currentTurn) {
                 selectedPiece = {
@@ -892,14 +892,11 @@ const Board = (props) => {
         }
     }
     
-    // NOTE: IN HINDSIGHT, I SHOULD HAVE PUT MY FUNCTIONS INTO THIS SO THAT I DIDN'T HAVE TO USE
-    // MY WEIRD WORKAROUND
     let squares = []
     const [pieces, setPieces] = useState(originalPieces)
     const [turnColor, setTurnColor] = useState("white")
     let flipBoard = turnColor === "white" ? 0 : 700
     
-    setCurrentTurn = setTurnColor
     endMatch = props.matchEnded
 
     kingCaptures = !props.checkEnabled
@@ -913,17 +910,21 @@ const Board = (props) => {
         }
     })
 
+    const {sendPieceMover, sendPieceCapturer, sendKingMover} = props
+
     useEffect(() => {
         currentTurn = "white"
         if (props.isMultiplayer) {
-            props.sendPieceMover((piece, x, y) => {
+            sendPieceMover((piece, x, y) => {
+                console.log("Opponent moved piece!")
                 selectedPiece = piece
                 movePiece(x, y, true)
                 if (piece.type === "pawn" && y === (piece.color === "black" ? "700" : "0")) {
                     promotePawn(piece.id, x)
                 }
             })
-            props.sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+            sendPieceCapturer((piece, x, y, capturedPieceId, capturedPieceType, capturedPieceColor) => {
+                console.log("Opponent captured piece!")
                 selectedPiece = piece
                 movePiece(x, y, true)
                 setPieces(pieces.filter((piece) => piece.id !== capturedPieceId))
@@ -931,12 +932,14 @@ const Board = (props) => {
                     endGame(opposite(capturedPieceColor))
                 }
             })
-            props.sendKingMover((piece, x, y) => {
+            sendKingMover((piece, x, y) => {
+                console.log("Opponent moved king!")
                 selectedPiece = piece
                 moveKing(x, y, true)
             })
         }
-    }, [])
+    }, [props.isMultiplayer, sendPieceMover, sendPieceCapturer, sendKingMover, pieces])
+
     globalSendMove = props.sendMove
     globalSendCapture = props.sendCapture
     globalSendKingMove = props.sendKingMove
@@ -947,7 +950,7 @@ const Board = (props) => {
         } else {
             playerColor = "solo"
         }
-    }, [props.playerColor])
+    }, [props.playerColor, props.isMultiplayer])
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
