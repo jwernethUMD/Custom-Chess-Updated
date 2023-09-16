@@ -18,6 +18,9 @@ function Home() {
                     <div className="my-4">
                         <Link to="https://github.com/jwernethUMD/Custom-Chess-Updated" className="btn btn-primary">View Source Code</Link>
                     </div>
+                    <div className="my-5 text-danger">
+                        Note that the backend may take a moment to wake up if the site hasn't been recently used
+                    </div>
                 </div>
             </div>
         </>
