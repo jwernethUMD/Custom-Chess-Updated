@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import { BackendURL } from "../GlobalConstants"
 import { NavLink } from "react-router-dom"
 
-const baseUrl = BackendURL//"http://localhost:5000"//"https://custom-chess.onrender.com"
+const baseUrl = BackendURL
 
 function Header() {
     const [userLoggedIn, setUserLoggedIn] = useState(true)

@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { BackendURL } from "../GlobalConstants"
 import { io } from "socket.io-client"
-const baseUrl = BackendURL // "http://localhost:5000" //"https://custom-chess.onrender.com"
+const baseUrl = BackendURL
 
 function MultiplayerChoose() {
     const [gameCode, setGameCode] = useState("")

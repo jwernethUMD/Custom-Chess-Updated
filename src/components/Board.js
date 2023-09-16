@@ -844,7 +844,7 @@ const Board = (props) => {
         if (gameState !== "game running") {
             return
         }
-        console.log(playerColor, currentTurn)
+
         if (playerColor !== "solo" && playerColor !== currentTurn) {
             return
         }
@@ -910,10 +910,12 @@ const Board = (props) => {
         }
     })
 
-    const {sendPieceMover, sendPieceCapturer, sendKingMover} = props
-
     useEffect(() => {
         currentTurn = "white"
+    }, [])
+
+    const {sendPieceMover, sendPieceCapturer, sendKingMover} = props
+    useEffect(() => {
         if (props.isMultiplayer) {
             sendPieceMover((piece, x, y) => {
                 console.log("Opponent moved piece!")

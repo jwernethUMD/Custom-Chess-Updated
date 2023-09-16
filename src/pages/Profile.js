@@ -2,7 +2,7 @@ import axios from "axios"
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { BackendURL } from "../GlobalConstants"
-const baseUrl = BackendURL // "http://localhost:5000"//"https://custom-chess.onrender.com"
+const baseUrl = BackendURL
 
 function Profile() {
     const [username, setUsername] = useState("")
