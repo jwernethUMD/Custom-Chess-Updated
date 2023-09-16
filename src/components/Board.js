@@ -21,8 +21,7 @@ let playerColor = "solo"
 let enPassant = null
 let gameState = "game running"
 let id = 0
-// o stands for outer
-let oPieces, oSetPieces
+
 let endMatch
 let globalSendMove, globalSendCapture, globalSendKingMove
 // Keep track of basic stats for each color
@@ -160,53 +159,7 @@ function opposite(color) {
     return color === "white" ? "black" : "white"
 }
 
-function restart() {
-    id = 0
-    stats.set("white", {
-        kingsideCastling: castlingEnabled,
-        queensideCastling: castlingEnabled,
-    })
-    stats.set("black", {
-        kingsideCastling: castlingEnabled,
-        queensideCastling: castlingEnabled,
-    })
-    for (let i = 0; i < 8; i++) {
-        boardModel[i] = []
-        for (let j = 0; j < 8; j++) {
-            // The first part of this pair indicates the piece thats on the square, whereas the second
-            // indicates which color controls that square
-            boardModel[i][j] = {
-                occupier: "empty",
-                whiteCaptureControls: false,
-                whiteMoveControls: false,
-                blackMoveControls: false,
-                blackCaptureControls: false,
-                whiteControlsStrong: false, // whiteControlsStrong means a white piece that isn't the king controls the square
-                blackControlsStrong: false
-            }
-        }
-    }
-    originalPieces = makePieces()
-    oPieces = originalPieces
-    oSetPieces(originalPieces)
-    setters.forEach((v, pieceId) => {
-        let position = findPiece(pieceId)
-        if (position != null) {
-            v.setPositionX((position[0] * 100).toString())
-            v.setPositionY((position[1] * 100).toString())
-        }
-    })
-    if (flippingBoardEnabled) {
-        setCurrentTurn("white")
-    }
-    currentTurn = "white"
-    gameState = "game running"
-}
 
-function endGame(color) {
-    gameState = "game ended"
-    endMatch(color, restart)
-}
 
 function addSetter(pieceId, setPosX, setPosY) {
     setters.set(pieceId, {setPositionX: setPosX, setPositionY: setPosY})
@@ -289,41 +242,6 @@ function detailBoard() {
             }
         }
     }
-}
-
-function promotePawn(pawnId, x) {
-    // Map all elements onto the same as what they were before except for the pawn with
-    // pawnId (change its type and id)
-    oPieces = oPieces.map((piece) => {
-        if (piece.id !== pawnId) {
-            return piece
-        } else {
-            let pieceId = "queen_" + selectedPiece.color + "_" + (id++).toString()
-            let positY = (currentTurn === "black" ? "700" : "0").toString()
-            
-            let pawnSetters = setters.get(pawnId)
-            setters.delete(pawnId)
-            setters.set(pieceId, pawnSetters)
-
-            selectedPiece = {
-                id: pieceId,
-                color: currentTurn,
-                type: "queen",
-                posX: x,
-                posY: positY
-            }
-            return {
-                id: pieceId,
-                img: "piece-images/" + currentTurn + "-queen.png",
-                posX: x,
-                posY: positY,
-                color: currentTurn,
-                type: "queen"
-            }
-        }
-    })
-    oSetPieces(oPieces)
-    // Need to update the boardModel?
 }
 
 function canKingMove(kingPosX, kingPosY) {
@@ -437,164 +355,6 @@ function findPiecesAttackingKing(kingPosX, kingPosY) {
     return piecesAttacking
 }
 
-function movePiece(x, y, fromServer = false, isCapture = false) {
-    if (globalSendMove && !fromServer && !isCapture && selectedPiece.type !== "king") {
-        globalSendMove(selectedPiece, x, y)
-    }
-    
-    let tempBoard = modelCopy(boardModel)
-
-    updateBoard(parseInt(selectedPiece.posX) / 100, parseInt(selectedPiece.posY) / 100,
-            parseInt(x) / 100, parseInt(y) / 100, selectedPiece.id)
-    detailBoard()
-    /* For testing:
-    let xp = parseInt(x) / 100
-    let yp = parseInt(y) / 100
-    console.log("Piece moving to: ", xp, yp)
-    console.log(" stats for that square: ", boardModel[xp][yp])
-    console.log("King in check: ", kingInCheck())
-    */
-    console.log(getBMString())
-    console.log(getControlString())
-
-    if (!kingCaptures) {
-        let attackedKing = kingInCheck()
-        // Check for includes for this one, because a player could try to move their king such that it'd
-        // put both kings into check, which should not be allowed 
-        if (attackedKing.includes(currentTurn)) {
-            boardModel = tempBoard
-            detailBoard()
-            return false
-        } else if (attackedKing === opposite(currentTurn)) {
-            console.log(opposite(currentTurn) + " king is in check!")
-            // Note: currentTurn will be the color of the player that is ATTACKING the king
-            let kingColor = opposite(currentTurn)
-            // Index 0 of the result will have the x position, 1 will have the y
-            let [kingPosX, kingPosY] = findPiece("king_" + kingColor)
-            let kingCanMove = canKingMove(kingPosX, kingPosY)
-            console.log(kingCanMove)
-
-            if (!kingCanMove) {
-                console.log("and it can't move!")
-                // This array will have the locations of pieces that are attacking the king 
-                // in [x, y] pairs
-                let piecesAttacking = findPiecesAttackingKing(kingPosX, kingPosY)
-                
-                // If there are 2 or more pieces attacking the king, then they can't be blocked or taken
-                // (because there are 2 to deal with) [Look up info about double checks!]
-                if (piecesAttacking.length >= 2) {
-                    endGame(currentTurn)
-                } else { 
-                    console.log("theres only one piece attacking it")
-                    let attackerX = piecesAttacking[0][0]
-                    let attackerY = piecesAttacking[0][1]
-                    // Do any defending pieces control the square that the attacker is on?
-                    if (!boardModel[attackerX][attackerY][kingColor + "ControlsStrong"]) {
-                        console.log("but nobody can take it!")
-                        // If the knight can't be taken, then its mate
-                        if (boardModel[attackerX][attackerY].occupier.includes("knight")) { 
-                            endGame(currentTurn)
-                        } else {
-                            let dx = kingPosX - attackerX
-                            let dy = kingPosY - attackerY
-                            let larger = Math.max(Math.abs(dx), Math.abs(dy))
-                            let dxNorm = dx === 0 ? 0 : dx / Math.abs(dx)
-                            let dyNorm = dy === 0 ? 0 : dy / Math.abs(dy)
-
-                            // If the piece can't be taken, it must be blocked
-                            let pathBlocked = false
-
-                            // Check each square on the path to the attacking piece to the king, 
-                            // non-inclusive
-                            console.log(`Checking squares from i to ${larger} now`)
-                            for (let i = 1; i < larger; i++) {
-                                console.log("Checking square: ", attackerX + dxNorm, attackerY + (dyNorm * i))
-
-                                // Note: king shouldn't moveControl even squares that it can move to
-                                if (boardModel[attackerX + (dxNorm * i)][attackerY + (dyNorm * i)][kingColor + "MoveControls"]) {
-                                    console.log("attacking piece can be blocked on", attackerX + dxNorm, attackerY + (dyNorm * i))
-                                    pathBlocked = true
-                                    break
-                                }
-                            }
-
-                            if (!pathBlocked) {
-                                endGame(currentTurn)
-                            }
-                        }
-                    }
-                }
-                
-                // then do they control any of the squares on the path from the attacker to the king?
-            }
-        }
-    }
-    
-    let pieceSetters = setters.get(selectedPiece.id)
-    
-    pieceSetters.setPositionX(x)
-    pieceSetters.setPositionY(y)
-    
-    selectedPiece = null
-    enPassant = null
-    setHighlight(false)
-    if (flippingBoardEnabled) {
-        setCurrentTurn(opposite(currentTurn))
-    }
-    currentTurn = opposite(currentTurn)
-
-    return true
-}
-
-function movePawn(x, y) {
-    let posX = parseInt(selectedPiece.posX)
-    let posY = parseInt(selectedPiece.posY)
-    let direction = selectedPiece.color === "black" ? 1 : -1
-    let startingPos = selectedPiece.color === "black" ? 100 : 600
-    let differenceX = parseInt(x) - posX
-    let differenceY = (parseInt(y) - posY) * direction
-    
-    if ((differenceX === 0) && (differenceY === 100 )) {
-        if (y === (selectedPiece.color === "black" ? "700" : "0")) {
-            promotePawn(selectedPiece.id, x)
-        }
-        return movePiece(x, y)
-    } else if ((differenceX === 0) && (differenceY === 200 && posY === startingPos)) {
-        if (boardModel[posX / 100][posY / 100 + direction].occupier !== "empty") {
-            return false
-        }
-        let enPassantTemp = { // Need to make this null after any other piece moves
-            id: selectedPiece.id,
-            positionX: selectedPiece.posX,
-            positionY: selectedPiece.color === "black" ? "200" : "500"
-        }
-        let result = movePiece(x, y)
-        enPassant = enPassantTemp
-        return result
-    } else if ((Math.abs(differenceX) === 100) && differenceY === 100 && enPassant !== null &&
-            enPassant.positionX === x && enPassant.positionY === y) {
-        oSetPieces(oPieces.filter((piece) => piece.id !== enPassant.id))
-        return movePiece(x, y)
-    }
-
-    return false
-}
-
-function pawnCapture(x, y) {
-    let direction = selectedPiece.color === "black" ? 1 : -1
-    let differenceY = (parseInt(y) - parseInt(selectedPiece.posY)) * direction
-    let differenceX = Math.abs(parseInt(x) - parseInt(selectedPiece.posX))
-    
-    if ((differenceX === 100) && (differenceY === 100)) {
-        if (y === (selectedPiece.color === "black" ? "700" : "0")) {
-            promotePawn(selectedPiece.id, x)
-        }
-        return movePiece(x, y, false, true)
-    }
-
-    return false
-}
-
 // Version of the % operator that returns 0 for 0 % 0, also 
 function trplMod(a, b) {
     if (a === 0 && b === 0) {
@@ -641,102 +401,6 @@ function isTripletMultiple(diffX, diffY, type) {
     }
 
     return [null, null, null]
-}
-
-function movePieceFilter(x, y, type, isCapture = false) {
-    let posX = parseInt(selectedPiece.posX)
-    let posY = parseInt(selectedPiece.posY)
-    let differenceX = parseInt(x) - posX
-    let differenceY = parseInt(y) - posY
-    
-    let [unitX, unitY, units] = isTripletMultiple(differenceX, differenceY, type)
-    
-    if (unitX != null) {
-        for (let i = 1; i < units; i++) {
-            if (boardModel[(posX / 100) + i * unitX][posY / 100 + i * unitY].occupier !== "empty") {
-                console.log(`${selectedPiece.type} blocked by piece at ${(posX / 100) + i * unitX}, ${(posY / 100 + i * unitY)}`)
-                return false
-            }
-        }
-
-        return movePiece(x, y, false, isCapture)
-    }
-
-    return false
-}
-
-function moveKing(x, y, fromServer = false) {
-    if (globalSendKingMove && !fromServer) {
-        globalSendKingMove(selectedPiece, x, y)
-    }
-    let posX = parseInt(selectedPiece.posX)
-    let posY = parseInt(selectedPiece.posY)
-    let differenceX = parseInt(x) - posX
-    let differenceY = parseInt(y) - posY
-    let differenceXZero = differenceX === 0
-    let differenceYZero = differenceY === 0
-    let sideMove = (Math.abs(differenceX) === 100 && differenceYZero) ||
-            (differenceXZero && Math.abs(differenceY) === 100)
-    let diagnolMove = Math.abs(differenceX) === 100 && Math.abs(differenceY) === 100
-
-    let colorStats = stats.get(currentTurn)
-    
-    if (sideMove || diagnolMove) {
-        colorStats.kingsideCastling = false
-        colorStats.queensideCastling = false
-        return movePiece(x, y)
-    }
-
-    let kingsideCastle = differenceYZero && (differenceX >= 200) && colorStats.kingsideCastling
-    let queensideCastle = differenceYZero && (differenceX <= -200) && colorStats.queensideCastling
-
-    if (kingsideCastle) {
-        for (let i = 1; i < 3; i++) {
-            if (boardModel[posX / 100 + i][posY / 100].occupier !== "empty") {
-                return false
-            }
-        }
-        movePiece("600", selectedPiece.posY)
-        let rookId = "rook_" + opposite(currentTurn) + "_kingside"
-        setters.get(rookId)
-            .setPositionX("500")
-        let side = currentTurn === "white" ? 0 : 7
-        updateBoard(7, side, 5, side, rookId)
-        colorStats.kingsideCastling = false
-        colorStats.queensideCastling = false
-        return true
-    } else if (queensideCastle) {
-        for (let i = 1; i < 4; i++) {
-            if (boardModel[posX / 100 - i][posY / 100].occupier !== "empty") {
-                return false
-            }
-        }
-        movePiece("200", selectedPiece.posY)
-        let rookId = "rook_" + opposite(currentTurn) + "_queenside"
-        setters.get(rookId)
-            .setPositionX("300")
-        let side = currentTurn === "black" ? 0 : 7
-        updateBoard(0, side, 3, side, rookId)
-        colorStats.kingsideCastling = false
-        colorStats.queensideCastling = false
-        return true
-    }
-    
-    return false
-}
-
-function squareSelected(x, y, isCapture) {
-    if (selectedPiece !== null) {
-        if (selectedPiece.type === "pawn") {
-            return isCapture ? pawnCapture(x, y) : movePawn(x, y)
-        } else if (castlingEnabled && selectedPiece.type === "king") {
-            return moveKing(x, y)
-        } else {
-            return movePieceFilter(x, y, selectedPiece.type, isCapture)
-        }
-    }
-
-    return true
 }
 
 function makePieces() {
@@ -840,59 +504,394 @@ function makePieces() {
     return result
 }
 
-function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
-    if (gameState !== "game running") {
-        return
-    }
-
-    if (playerColor !== "solo" && playerColor !== currentTurn) {
-        return
-    }
-    if (selectedPiece == null) {
-        if (pieceColor === currentTurn) {
-            selectedPiece = {
-                id: pieceId,
-                color: pieceColor,
-                type: pieceType,
-                posX: x,
-                posY: y
-            }
-            setHighlight = highlightPiece
-            highlightPiece(true)
-        }
-    } else if (selectedPiece.id === pieceId) {
-        selectedPiece = null
-        highlightPiece(false)
-    } else { // Piece trying to capture another piece (color unknown)
-        if (pieceColor !== selectedPiece.color) {
-            const lastSelectedPiece = selectedPiece
-            if (squareSelected(x, y, true)) {
-                if (globalSendCapture) {
-                    globalSendCapture(lastSelectedPiece, x, y, pieceId, pieceType, pieceColor)
-                }
-                oSetPieces(oPieces.filter((piece) => piece.id !== pieceId))
-                if (pieceType === "king") {
-                    endGame(opposite(pieceColor))
-                }
-            }
-        } else {
-            setHighlight(false)
-            selectedPiece = {
-                id: pieceId,
-                color: pieceColor,
-                type: pieceType,
-                posX: x,
-                posY: y
-            }
-
-            setHighlight = highlightPiece
-            highlightPiece(true)
-        }
-    }
-}
-
 let setCurrentTurn
 const Board = (props) => {
+    function promotePawn(pawnId, x) {
+        // Map all elements onto the same as what they were before except for the pawn with
+        // pawnId (change its type and id)
+        setPieces(pieces.map((piece) => {
+            if (piece.id !== pawnId) {
+                return piece
+            } else {
+                let pieceId = "queen_" + selectedPiece.color + "_" + (id++).toString()
+                let positY = (currentTurn === "black" ? "700" : "0").toString()
+                
+                let pawnSetters = setters.get(pawnId)
+                setters.delete(pawnId)
+                setters.set(pieceId, pawnSetters)
+    
+                selectedPiece = {
+                    id: pieceId,
+                    color: currentTurn,
+                    type: "queen",
+                    posX: x,
+                    posY: positY
+                }
+                return {
+                    id: pieceId,
+                    img: "piece-images/" + currentTurn + "-queen.png",
+                    posX: x,
+                    posY: positY,
+                    color: currentTurn,
+                    type: "queen"
+                }
+            }
+        }))
+        // Need to update the boardModel?
+    }
+
+    function movePawn(x, y) {
+        let posX = parseInt(selectedPiece.posX)
+        let posY = parseInt(selectedPiece.posY)
+        let direction = selectedPiece.color === "black" ? 1 : -1
+        let startingPos = selectedPiece.color === "black" ? 100 : 600
+        let differenceX = parseInt(x) - posX
+        let differenceY = (parseInt(y) - posY) * direction
+        
+        if ((differenceX === 0) && (differenceY === 100 )) {
+            if (y === (selectedPiece.color === "black" ? "700" : "0")) {
+                promotePawn(selectedPiece.id, x)
+            }
+            return movePiece(x, y)
+        } else if ((differenceX === 0) && (differenceY === 200 && posY === startingPos)) {
+            if (boardModel[posX / 100][posY / 100 + direction].occupier !== "empty") {
+                return false
+            }
+            let enPassantTemp = { // Need to make this null after any other piece moves
+                id: selectedPiece.id,
+                positionX: selectedPiece.posX,
+                positionY: selectedPiece.color === "black" ? "200" : "500"
+            }
+            let result = movePiece(x, y)
+            enPassant = enPassantTemp
+            return result
+        } else if ((Math.abs(differenceX) === 100) && differenceY === 100 && enPassant !== null &&
+                enPassant.positionX === x && enPassant.positionY === y) {
+            setPieces(pieces.filter((piece) => piece.id !== enPassant.id))
+            return movePiece(x, y)
+        }
+    
+        return false
+    }
+    
+    function pawnCapture(x, y) {
+        let direction = selectedPiece.color === "black" ? 1 : -1
+        let differenceY = (parseInt(y) - parseInt(selectedPiece.posY)) * direction
+        let differenceX = Math.abs(parseInt(x) - parseInt(selectedPiece.posX))
+        
+        if ((differenceX === 100) && (differenceY === 100)) {
+            if (y === (selectedPiece.color === "black" ? "700" : "0")) {
+                promotePawn(selectedPiece.id, x)
+            }
+            return movePiece(x, y, false, true)
+        }
+    
+        return false
+    }
+
+    function movePieceFilter(x, y, type, isCapture = false) {
+        let posX = parseInt(selectedPiece.posX)
+        let posY = parseInt(selectedPiece.posY)
+        let differenceX = parseInt(x) - posX
+        let differenceY = parseInt(y) - posY
+        
+        let [unitX, unitY, units] = isTripletMultiple(differenceX, differenceY, type)
+        
+        if (unitX != null) {
+            for (let i = 1; i < units; i++) {
+                if (boardModel[(posX / 100) + i * unitX][posY / 100 + i * unitY].occupier !== "empty") {
+                    console.log(`${selectedPiece.type} blocked by piece at ${(posX / 100) + i * unitX}, ${(posY / 100 + i * unitY)}`)
+                    return false
+                }
+            }
+    
+            return movePiece(x, y, false, isCapture)
+        }
+    
+        return false
+    }
+    
+    function moveKing(x, y, fromServer = false) {
+        if (globalSendKingMove && !fromServer) {
+            globalSendKingMove(selectedPiece, x, y)
+        }
+        let posX = parseInt(selectedPiece.posX)
+        let posY = parseInt(selectedPiece.posY)
+        let differenceX = parseInt(x) - posX
+        let differenceY = parseInt(y) - posY
+        let differenceXZero = differenceX === 0
+        let differenceYZero = differenceY === 0
+        let sideMove = (Math.abs(differenceX) === 100 && differenceYZero) ||
+                (differenceXZero && Math.abs(differenceY) === 100)
+        let diagnolMove = Math.abs(differenceX) === 100 && Math.abs(differenceY) === 100
+    
+        let colorStats = stats.get(currentTurn)
+        
+        if (sideMove || diagnolMove) {
+            colorStats.kingsideCastling = false
+            colorStats.queensideCastling = false
+            return movePiece(x, y)
+        }
+    
+        let kingsideCastle = differenceYZero && (differenceX >= 200) && colorStats.kingsideCastling
+        let queensideCastle = differenceYZero && (differenceX <= -200) && colorStats.queensideCastling
+    
+        if (kingsideCastle) {
+            for (let i = 1; i < 3; i++) {
+                if (boardModel[posX / 100 + i][posY / 100].occupier !== "empty") {
+                    return false
+                }
+            }
+            movePiece("600", selectedPiece.posY)
+            let rookId = "rook_" + opposite(currentTurn) + "_kingside"
+            setters.get(rookId)
+                .setPositionX("500")
+            let side = currentTurn === "white" ? 0 : 7
+            updateBoard(7, side, 5, side, rookId)
+            colorStats.kingsideCastling = false
+            colorStats.queensideCastling = false
+            return true
+        } else if (queensideCastle) {
+            for (let i = 1; i < 4; i++) {
+                if (boardModel[posX / 100 - i][posY / 100].occupier !== "empty") {
+                    return false
+                }
+            }
+            movePiece("200", selectedPiece.posY)
+            let rookId = "rook_" + opposite(currentTurn) + "_queenside"
+            setters.get(rookId)
+                .setPositionX("300")
+            let side = currentTurn === "black" ? 0 : 7
+            updateBoard(0, side, 3, side, rookId)
+            colorStats.kingsideCastling = false
+            colorStats.queensideCastling = false
+            return true
+        }
+        
+        return false
+    }
+    
+    function squareSelected(x, y, isCapture) {
+        if (selectedPiece !== null) {
+            if (selectedPiece.type === "pawn") {
+                return isCapture ? pawnCapture(x, y) : movePawn(x, y)
+            } else if (castlingEnabled && selectedPiece.type === "king") {
+                return moveKing(x, y)
+            } else {
+                return movePieceFilter(x, y, selectedPiece.type, isCapture)
+            }
+        }
+    
+        return true
+    }
+
+    function movePiece(x, y, fromServer = false, isCapture = false) {
+        if (globalSendMove && !fromServer && !isCapture && selectedPiece.type !== "king") {
+            globalSendMove(selectedPiece, x, y)
+        }
+        
+        let tempBoard = modelCopy(boardModel)
+    
+        updateBoard(parseInt(selectedPiece.posX) / 100, parseInt(selectedPiece.posY) / 100,
+                parseInt(x) / 100, parseInt(y) / 100, selectedPiece.id)
+        detailBoard()
+        /* For testing:
+        let xp = parseInt(x) / 100
+        let yp = parseInt(y) / 100
+        console.log("Piece moving to: ", xp, yp)
+        console.log(" stats for that square: ", boardModel[xp][yp])
+        console.log("King in check: ", kingInCheck())
+        */
+        console.log(getBMString())
+        console.log(getControlString())
+    
+        if (!kingCaptures) {
+            let attackedKing = kingInCheck()
+            // Check for includes for this one, because a player could try to move their king such that it'd
+            // put both kings into check, which should not be allowed 
+            if (attackedKing.includes(currentTurn)) {
+                boardModel = tempBoard
+                detailBoard()
+                return false
+            } else if (attackedKing === opposite(currentTurn)) {
+                console.log(opposite(currentTurn) + " king is in check!")
+                // Note: currentTurn will be the color of the player that is ATTACKING the king
+                let kingColor = opposite(currentTurn)
+                // Index 0 of the result will have the x position, 1 will have the y
+                let [kingPosX, kingPosY] = findPiece("king_" + kingColor)
+                let kingCanMove = canKingMove(kingPosX, kingPosY)
+                console.log(kingCanMove)
+    
+                if (!kingCanMove) {
+                    console.log("and it can't move!")
+                    // This array will have the locations of pieces that are attacking the king 
+                    // in [x, y] pairs
+                    let piecesAttacking = findPiecesAttackingKing(kingPosX, kingPosY)
+                    
+                    // If there are 2 or more pieces attacking the king, then they can't be blocked or taken
+                    // (because there are 2 to deal with) [Look up info about double checks!]
+                    if (piecesAttacking.length >= 2) {
+                        endGame(currentTurn)
+                    } else { 
+                        console.log("theres only one piece attacking it")
+                        let attackerX = piecesAttacking[0][0]
+                        let attackerY = piecesAttacking[0][1]
+                        // Do any defending pieces control the square that the attacker is on?
+                        if (!boardModel[attackerX][attackerY][kingColor + "ControlsStrong"]) {
+                            console.log("but nobody can take it!")
+                            // If the knight can't be taken, then its mate
+                            if (boardModel[attackerX][attackerY].occupier.includes("knight")) { 
+                                endGame(currentTurn)
+                            } else {
+                                let dx = kingPosX - attackerX
+                                let dy = kingPosY - attackerY
+                                let larger = Math.max(Math.abs(dx), Math.abs(dy))
+                                let dxNorm = dx === 0 ? 0 : dx / Math.abs(dx)
+                                let dyNorm = dy === 0 ? 0 : dy / Math.abs(dy)
+    
+                                // If the piece can't be taken, it must be blocked
+                                let pathBlocked = false
+    
+                                // Check each square on the path to the attacking piece to the king, 
+                                // non-inclusive
+                                console.log(`Checking squares from i to ${larger} now`)
+                                for (let i = 1; i < larger; i++) {
+                                    console.log("Checking square: ", attackerX + dxNorm, attackerY + (dyNorm * i))
+    
+                                    // Note: king shouldn't moveControl even squares that it can move to
+                                    if (boardModel[attackerX + (dxNorm * i)][attackerY + (dyNorm * i)][kingColor + "MoveControls"]) {
+                                        console.log("attacking piece can be blocked on", attackerX + dxNorm, attackerY + (dyNorm * i))
+                                        pathBlocked = true
+                                        break
+                                    }
+                                }
+    
+                                if (!pathBlocked) {
+                                    endGame(currentTurn)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // then do they control any of the squares on the path from the attacker to the king?
+                }
+            }
+        }
+        
+        let pieceSetters = setters.get(selectedPiece.id)
+        
+        pieceSetters.setPositionX(x)
+        pieceSetters.setPositionY(y)
+        
+        selectedPiece = null
+        enPassant = null
+        setHighlight(false)
+        if (flippingBoardEnabled) {
+            setCurrentTurn(opposite(currentTurn))
+        }
+        currentTurn = opposite(currentTurn)
+    
+        return true
+    }
+
+    function restart() {
+        id = 0
+        stats.set("white", {
+            kingsideCastling: castlingEnabled,
+            queensideCastling: castlingEnabled,
+        })
+        stats.set("black", {
+            kingsideCastling: castlingEnabled,
+            queensideCastling: castlingEnabled,
+        })
+        for (let i = 0; i < 8; i++) {
+            boardModel[i] = []
+            for (let j = 0; j < 8; j++) {
+                // The first part of this pair indicates the piece thats on the square, whereas the second
+                // indicates which color controls that square
+                boardModel[i][j] = {
+                    occupier: "empty",
+                    whiteCaptureControls: false,
+                    whiteMoveControls: false,
+                    blackMoveControls: false,
+                    blackCaptureControls: false,
+                    whiteControlsStrong: false, // whiteControlsStrong means a white piece that isn't the king controls the square
+                    blackControlsStrong: false
+                }
+            }
+        }
+        originalPieces = makePieces()
+        setPieces(originalPieces)
+        setters.forEach((v, pieceId) => {
+            let position = findPiece(pieceId)
+            if (position != null) {
+                v.setPositionX((position[0] * 100).toString())
+                v.setPositionY((position[1] * 100).toString())
+            }
+        })
+        if (flippingBoardEnabled) {
+            setCurrentTurn("white")
+        }
+        currentTurn = "white"
+        gameState = "game running"
+    }
+    
+    function endGame(color) {
+        gameState = "game ended"
+        endMatch(color, restart)
+    }
+
+    function pieceSelected(pieceId, x, y, pieceColor, pieceType, highlightPiece) {
+        if (gameState !== "game running") {
+            return
+        }
+    
+        if (playerColor !== "solo" && playerColor !== currentTurn) {
+            return
+        }
+        if (selectedPiece == null) {
+            if (pieceColor === currentTurn) {
+                selectedPiece = {
+                    id: pieceId,
+                    color: pieceColor,
+                    type: pieceType,
+                    posX: x,
+                    posY: y
+                }
+                setHighlight = highlightPiece
+                highlightPiece(true)
+            }
+        } else if (selectedPiece.id === pieceId) {
+            selectedPiece = null
+            highlightPiece(false)
+        } else { // Piece trying to capture another piece (color unknown)
+            if (pieceColor !== selectedPiece.color) {
+                const lastSelectedPiece = selectedPiece
+                if (squareSelected(x, y, true)) {
+                    if (globalSendCapture) {
+                        globalSendCapture(lastSelectedPiece, x, y, pieceId, pieceType, pieceColor)
+                    }
+                    setPieces(pieces.filter((piece) => piece.id !== pieceId))
+                    if (pieceType === "king") {
+                        endGame(opposite(pieceColor))
+                    }
+                }
+            } else {
+                setHighlight(false)
+                selectedPiece = {
+                    id: pieceId,
+                    color: pieceColor,
+                    type: pieceType,
+                    posX: x,
+                    posY: y
+                }
+    
+                setHighlight = highlightPiece
+                highlightPiece(true)
+            }
+        }
+    }
+    
     // NOTE: IN HINDSIGHT, I SHOULD HAVE PUT MY FUNCTIONS INTO THIS SO THAT I DIDN'T HAVE TO USE
     // MY WEIRD WORKAROUND
     let squares = []
@@ -901,8 +900,6 @@ const Board = (props) => {
     let flipBoard = turnColor === "white" ? 0 : 700
     
     setCurrentTurn = setTurnColor
-    oPieces = pieces
-    oSetPieces = setPieces
     endMatch = props.matchEnded
 
     kingCaptures = !props.checkEnabled
