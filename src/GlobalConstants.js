@@ -1,1 +1,2 @@
-export const BackendURL = "http://localhost:5000" // So that I don't have to change it in every file when hosting/testing
+// Either https://custom-chess.onrender.com or http://localhost:5000
+export const BackendURL = "https://custom-chess.onrender.com" // So that I don't have to change it in every file when hosting/testing
